@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 interface OptionToken {
     event Mint(address indexed minter, uint256 amount);
 
-    event Repay(address indexed payer, uint256 amount);
+    event Cancel(address indexed payer, uint256 amount);
 
     event Exercise(address indexed recipient, uint256 amount);
 

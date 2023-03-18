@@ -72,9 +72,10 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         amount = (collateralAmount * _PRECISION) / strikePrice;
-        _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
 
+        _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
         collateral[msg.sender] += collateralAmount;
+
         _mint(msg.sender, amount);
         emit Mint(msg.sender, amount);
     }
@@ -85,10 +86,11 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         amount = (collateralAmount * _PRECISION) / strikePrice;
 
-        _quoteToken.transfer(msg.sender, collateralAmount);
         collateral[msg.sender] -= collateralAmount;
         _burn(msg.sender, amount);
-        emit Repay(msg.sender, amount);
+
+        _quoteToken.transfer(msg.sender, collateralAmount);
+        emit Cancel(msg.sender, amount);
     }
 
     function exercise(uint256 amount) external nonReentrant {
