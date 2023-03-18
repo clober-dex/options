@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 
 import "../../../../contracts/PutOptionToken.sol";
 
-contract MockPutOption is PutOptionToken {
+contract MockPutOptionToken is PutOptionToken {
     constructor(
         address quoteToken,
         address underlyingToken,

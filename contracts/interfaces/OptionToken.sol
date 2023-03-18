@@ -35,9 +35,9 @@ interface OptionToken {
 
     function write(uint256 amount) external;
 
-    function repay(uint256 amount) external;
+    function cancel(uint256 amount) external;
 
     function exercise(uint256 amount) external;
 
-    function redeem(uint256 amount) external;
+    function claim() external;
 }
