@@ -21,7 +21,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
 
-    mapping(address => uint256) private _collateral;
+    mapping(address => uint256) public collateral;
     uint256 public exercisedAmount;
 
     uint256 public immutable strikePrice;
@@ -77,7 +77,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
 
-        _collateral[msg.sender] += collateralAmount;
+        collateral[msg.sender] += collateralAmount;
         _mint(msg.sender, amount);
         emit Mint(msg.sender, amount);
     }
@@ -87,7 +87,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         _quoteToken.transfer(msg.sender, collateralAmount);
-        _collateral[msg.sender] -= collateralAmount;
+        collateral[msg.sender] -= collateralAmount;
         _burn(msg.sender, amount);
         emit Repay(msg.sender, amount);
     }
@@ -120,7 +120,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
             (expiredAmount + exercisedAmount);
         uint256 redeemableQuoteAmount = (amount * exercisedAmount) / _PRECISION / (expiredAmount + exercisedAmount);
 
-        _collateral[msg.sender] -= (amount * strikePrice) / _PRECISION;
+        collateral[msg.sender] -= (amount * strikePrice) / _PRECISION;
         _quoteToken.transfer(msg.sender, redeemableUnderlyingAmount);
         _underlyingToken.transfer(msg.sender, redeemableQuoteAmount);
 

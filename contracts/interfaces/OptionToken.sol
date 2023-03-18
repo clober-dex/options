@@ -21,6 +21,8 @@ interface OptionToken {
 
     function quoteToken() external view returns (address);
 
+    function collateral(address) external view returns (uint256);
+
     function strikePrice() external view returns (uint256);
 
     function exercisedAmount() external view returns (uint256);
