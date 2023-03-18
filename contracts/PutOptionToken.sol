@@ -34,7 +34,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     uint256 private constant _FEE_PRECISION = 10**6;
     uint256 public immutable exerciseFee;
 
-    uint256 private constant _FEE_BALANCE_PRECISION = 10**18;
     uint256 public exerciseFeeBalance; // underlyingToken
 
     constructor(
@@ -92,22 +91,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         emit Repay(msg.sender, amount);
     }
 
-    function _exercise(uint256 amount) private {
-
-        uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
-        amount = (collateralAmount * _PRECISION) / strikePrice;
-
-        _burn(msg.sender, amount);
-
-        // fee by underlying
-        uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
-        exerciseFeeBalance += feeAmount;
-
-        _quoteToken.transfer(msg.sender, collateralAmount - feeAmount);
-        exercisedAmount += amount;
-        emit Exercise(msg.sender, amount);
-    }
-
     function exercise(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
@@ -115,7 +98,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         amount = (collateralAmount * _PRECISION) / strikePrice;
 
         _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
-
         _burn(msg.sender, amount);
 
         uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
