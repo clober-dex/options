@@ -4,9 +4,10 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../../../contracts/mock/MockUnderlyingToken.sol";
-import "../../../contracts/mock/MockQuoteToken.sol";
-import "../../../contracts/mock/MockPutOption.sol";
+
+import "./mocks/MockPutOption.sol";
+import "./mocks/MockQuoteToken.sol";
+import "./mocks/MockUnderlyingToken.sol";
 
 contract PutOptionsUnitTest is Test {
     MockPutOption putOptions;
