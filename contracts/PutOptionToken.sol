@@ -65,7 +65,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         return address(_underlyingToken);
     }
 
-    function mint(uint256 amount) external nonReentrant {
+    function write(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;

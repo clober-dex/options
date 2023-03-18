@@ -31,7 +31,7 @@ interface OptionToken {
 
     function exerciseFeeBalance() external view returns (uint256);
 
-    function mint(uint256 amount) external;
+    function write(uint256 amount) external;
 
     function repay(uint256 amount) external;
 
