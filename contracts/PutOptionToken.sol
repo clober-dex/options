@@ -15,24 +15,23 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     uint256 private constant _PRECISION = 10**18;
+    uint256 private constant _FEE_PRECISION = 10**6;
 
     uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
-
-    mapping(address => uint256) public collateral;
-    uint256 public exercisedAmount;
-
     uint256 public immutable strikePrice;
+    uint256 private immutable _quotePrecisionComplement; // 10**(18 - d)
 
     // Write => timestamp <= expiresAt
     // Cancel => timestamp <= expiresAt
     // Exercise => timestamp <= expiresAt
     // Redeem => expiresAt > timestamp
     uint256 public immutable expiresAt;
-
-    uint256 private constant _FEE_PRECISION = 10**6;
     uint256 public immutable exerciseFee; // bp
+
+    mapping(address => uint256) public collateral;
+    uint256 public exercisedAmount;
     uint256 public exerciseFeeBalance; // quote
 
     constructor(
