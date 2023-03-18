@@ -21,12 +21,14 @@ contract PutOptionsUnitTest is Test {
         underlyingToken = new MockUnderlyingToken();
 
         putOptions = new MockPutOption(
-            address(quoteToken),
             address(underlyingToken),
+            address(quoteToken),
             2 * 10**18,
             24 * 60 * 60,
             10000 // 1%
         );
+
+        quoteToken.mint(MINTER, 1000 * 10**quoteToken.decimals());
     }
 
     function testViewFunction() public {
@@ -38,4 +40,10 @@ contract PutOptionsUnitTest is Test {
     }
 
     function testMint() public {}
+
+    function testExercise() public {}
+
+    function testRedeem() public {}
+
+    function testRepay() public {}
 }

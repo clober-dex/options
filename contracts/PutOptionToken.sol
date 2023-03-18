@@ -39,16 +39,16 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     uint256 public exerciseFeeBalance; // underlyingToken
 
     constructor(
-        address quoteToken_,
         address underlyingToken_,
+        address quoteToken_,
         uint256 strikePrice_,
         uint256 expiresAt_,
         uint256 exerciseFee_,
         string memory name_,
         string memory symbol_
     ) ERC20(name_, symbol_) {
-        _quoteToken = IERC20(quoteToken_);
         _underlyingToken = IERC20(underlyingToken_);
+        _quoteToken = IERC20(quoteToken_);
 
         _DECIMALS = IERC20Metadata(underlyingToken_).decimals();
         _PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
@@ -63,12 +63,12 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         return _DECIMALS;
     }
 
-    function quoteToken() external view returns (address) {
-        return address(_quoteToken);
-    }
-
     function underlyingToken() external view returns (address) {
         return address(_underlyingToken);
+    }
+
+    function quoteToken() external view returns (address) {
+        return address(_quoteToken);
     }
 
     function write(uint256 amount) external nonReentrant {
