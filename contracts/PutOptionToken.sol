@@ -112,6 +112,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
             (expiredAmount + exercisedAmount);
         uint256 redeemableQuoteAmount = (amount * exercisedAmount) / _PRECISION / (expiredAmount + exercisedAmount);
 
+        _collateral[msg.sender] -= (amount * strikePrice) / _PRECISION;
         _underlyingToken.transfer(msg.sender, redeemableUnderlyingAmount);
         _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
 
