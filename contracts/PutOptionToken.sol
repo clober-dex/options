@@ -87,6 +87,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        amount = (collateralAmount * _PRECISION) / strikePrice;
+
         _quoteToken.transfer(msg.sender, collateralAmount);
         collateral[msg.sender] -= collateralAmount;
         _burn(msg.sender, amount);
@@ -96,14 +98,16 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     function _exercise(uint256 amount) private {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        _burn(msg.sender, amount);
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        amount = (collateralAmount * _PRECISION) / strikePrice;
+
+        _burn(msg.sender, amount);
 
         // fee by underlying
         uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
 
-        _quoteToken.transfer(msg.sender, collateralAmount);
+        _quoteToken.transfer(msg.sender, collateralAmount - feeAmount);
         exercisedAmount += amount;
         emit Exercise(msg.sender, amount);
     }
