@@ -82,7 +82,7 @@ contract PutOptionsUnitTest is Test {
     ) private {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
-        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**underlyingToken.decimals());
+        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18);
         underlyingToken.mint(user, amount);
 
         uint256 beforeOptionBalance = optionToken.balanceOf(user);
@@ -91,10 +91,16 @@ contract PutOptionsUnitTest is Test {
 
         vm.prank(EXERCISER);
         underlyingToken.approve(putOption, amount);
+        vm.prank(EXERCISER);
         optionToken.exercise(amount);
 
+        assertEq(optionToken.balanceOf(user), beforeOptionBalance - amount, "EXACT_WRITE_AMOUNT");
         assertEq(underlyingToken.balanceOf(user), beforeUnderlyingBalance - amount, "EXACT_WRITE_AMOUNT");
-        assertEq(quoteToken.balanceOf(user), beforeQuoteBalance + quoteAmount, "EXACT_QUOTE_AMOUNT");
+        assertEq(
+            quoteToken.balanceOf(user),
+            beforeQuoteBalance + quoteAmount - (quoteAmount * FEE) / 10**6,
+            "EXACT_QUOTE_AMOUNT"
+        );
     }
 
     function _transfer(
