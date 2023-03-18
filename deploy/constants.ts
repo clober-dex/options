@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js'
-
 export const ARB_TOKEN_ADDRESS = (tags: Record<string, boolean>): string => {
   return 'mainnet' in tags
     ? '0x912ce59144191c1204e64559fe8253a0e49e6548'
@@ -17,25 +15,39 @@ export const ARBITRUM_PUTOPTION_ADDRESS = (
   strikePrice: number,
 ): string => {
   if ('mainnet' in tags) {
-    throw new Error('ArbitrumPutOption is not deployed on mainnet')
+    switch (strikePrice) {
+      case 0.5:
+        return require('../deployments/42161/Arbitrum$0_5PutOption.json')
+          .address
+      case 1:
+        return require('../deployments/42161/Arbitrum$1PutOption.json').address
+      case 2:
+        return require('../deployments/42161/Arbitrum$2PutOption.json').address
+      case 4:
+        return require('../deployments/42161/Arbitrum$4PutOption.json').address
+      case 8:
+        return require('../deployments/42161/Arbitrum$8PutOption.json').address
+      case 16:
+        return require('../deployments/42161/Arbitrum$16PutOption.json').address
+    }
   }
   if ('testnet' in tags) {
     switch (strikePrice) {
       case 0.5:
-        return '0x5D45a5ADa82ecf78021E9b4518036a3B649e5a35'
+        return require('../deployments/421613/Arbitrum$0_5PutOption.json')
+          .address
       case 1:
-        return '0x0820Ed58A1f0d6FF42712a1877E368f183C94219'
+        return require('../deployments/421613/Arbitrum$1PutOption.json').address
       case 2:
-        return '0xefa4841C3FA0bCC33987DA112f7EA3b1aC7541D9'
+        return require('../deployments/421613/Arbitrum$2PutOption.json').address
       case 4:
-        return '0x8705373587dA69FB99181938E1463982f0Fa5b56'
+        return require('../deployments/421613/Arbitrum$4PutOption.json').address
       case 8:
-        return '0xb28f8E47818dd44FA3d94928BE42809494FD506B'
+        return require('../deployments/421613/Arbitrum$8PutOption.json').address
       case 16:
-        return '0x5c4871CA3EB28C1c552E5DaCF31B20BE939E156d'
+        return require('../deployments/421613/Arbitrum$16PutOption.json')
+          .address
     }
   }
   throw new Error('ArbitrumPutOption is not deployed on this network')
 }
-export const WAD = new BigNumber(10).pow(18)
-export const EXPIRES_AT = 1679575187 + 24 * 60 * 60
