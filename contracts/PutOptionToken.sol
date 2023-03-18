@@ -117,25 +117,28 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         _exercise(amount);
     }
 
-    function redeem(uint256 amount) external nonReentrant {
+    function claim() external nonReentrant {
         require(block.timestamp > expiresAt, "OPTION_NOT_EXPIRED");
         uint256 expiredAmount = totalSupply();
-        uint256 redeemableUnderlyingAmount = (amount * expiredAmount * strikePrice) /
-            _PRECISION /
-            (expiredAmount + exercisedAmount);
-        uint256 redeemableQuoteAmount = (amount * exercisedAmount) / _PRECISION / (expiredAmount + exercisedAmount);
+        uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
 
-        collateral[msg.sender] -= (amount * strikePrice) / _PRECISION;
-        _quoteToken.transfer(msg.sender, redeemableUnderlyingAmount);
-        _underlyingToken.transfer(msg.sender, redeemableQuoteAmount);
+        uint256 collateralAmount = collateral[msg.sender];
+        uint256 amount = (collateralAmount * _PRECISION) / strikePrice;
+
+        uint256 redeemableQuoteAmount = collateralAmount * expiredAmount / totalWrittenAmount;
+        uint256 redeemableUnderlyingAmount = amount * exercisedAmount / totalWrittenAmount;
+
+        collateral[msg.sender] = 0;
+        _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
+        _underlyingToken.transfer(msg.sender, redeemableUnderlyingAmount);
 
         emit Redeem(msg.sender, amount);
     }
 
     function collectFee() external onlyOwner nonReentrant {
-        _underlyingToken.transfer(msg.sender, exerciseFeeBalance - 1);
-        exerciseFeeBalance = 1;
+        _underlyingToken.transfer(msg.sender, exerciseFeeBalance);
+        exerciseFeeBalance = 0;
 
-        emit CollectFee(msg.sender, exerciseFeeBalance - 1);
+        emit CollectFee(msg.sender, exerciseFeeBalance);
     }
 }
