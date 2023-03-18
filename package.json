@@ -6,8 +6,9 @@
   "scripts": {
     "fork": "npx hardhat node",
     "compile": "TS_NODE_TRANSPILE_ONLY=1 npx hardhat compile",
-    "coverage": "npx hardhat coverage",
-    "test": "npx hardhat test",
+    "coverage": "forge coverage --match-contract UnitTest --report lcov",
+    "coverage:local": "rm -rf coverage && forge coverage --match-contract UnitTest --report lcov && genhtml lcov.info -o coverage --branch-coverage && open coverage/index.html",
+    "test": "forge test -vv",
     "precommit": "pre-commit install",
     "prettier:ts": "prettier --list-different \"{,!(node_modules)/**/}*.ts\"",
     "prettier:fix:ts": "prettier --write \"{,!(node_modules)/**/}*.ts\"",
@@ -62,6 +63,7 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2"
+    "@openzeppelin/contracts": "^4.4.2",
+    "@wagmi/chains": "^0.2.13"
   }
 }
