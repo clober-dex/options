@@ -83,6 +83,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function repay(uint256 amount) external nonReentrant {
+        require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
+
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         _quoteToken.transfer(msg.sender, collateralAmount);
         _collateral[msg.sender] -= collateralAmount;
