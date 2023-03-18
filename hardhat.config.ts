@@ -8,45 +8,64 @@ import '@nomiclabs/hardhat-waffle'
 import '@typechain/hardhat'
 import 'hardhat-deploy'
 import '@nomiclabs/hardhat-ethers'
+import '@nomiclabs/hardhat-etherscan'
 import 'hardhat-gas-reporter'
 import 'hardhat-contract-sizer'
 import 'hardhat-abi-exporter'
 import 'solidity-coverage'
 
-import './task/index.ts'
-
 dotenv.config()
 
 import { HardhatConfig } from 'hardhat/types'
+import { localhost, arbitrum, arbitrumGoerli } from '@wagmi/chains'
 
-import { CHAINID, NETWORK } from './utils/constant'
+const networkInfos = require('@wagmi/chains')
+const chainIdMap: { [key: string]: string } = {}
+for (const [networkName, networkInfo] of Object.entries(networkInfos)) {
+  // @ts-ignore
+  chainIdMap[networkInfo.id] = networkName
+}
 
 let privateKey: string
+let ok: string
 
 const getMainnetPrivateKey = () => {
   let network
   for (const [i, arg] of Object.entries(process.argv)) {
     if (arg === '--network') {
-      network = process.argv[parseInt(i) + 1]
+      network = parseInt(process.argv[parseInt(i) + 1])
+      if (network.toString() in chainIdMap && ok !== 'Y') {
+        ok = readlineSync.question(
+          `You are trying to use ${
+            chainIdMap[network.toString()]
+          } network [Y/n] : `,
+        )
+        if (ok !== 'Y') {
+          throw new Error('Network not allowed')
+        }
+      }
     }
   }
 
-  if (network === NETWORK.MAINNET) {
+  const prodNetworks = new Set<number>([arbitrum.id])
+  if (network && prodNetworks.has(network)) {
     if (privateKey) {
       return privateKey
     }
     const keythereum = require('keythereum')
 
-    const KEYSTORE = './mainnet-deploy-key-store.json'
+    const KEYSTORE = './clober-deployer-key.json'
     const PASSWORD = readlineSync.question('Password: ', {
       hideEchoBack: true,
     })
-    if (PASSWORD === 'view') {
-      return '0x0000000000000000000000000000000000000000000000000000000000000001'
+    if (PASSWORD !== '') {
+      const keyObject = JSON.parse(fs.readFileSync(KEYSTORE).toString())
+      privateKey =
+        '0x' + keythereum.recover(PASSWORD, keyObject).toString('hex')
+    } else {
+      privateKey =
+        '0x0000000000000000000000000000000000000000000000000000000000000001'
     }
-
-    const keyObject = JSON.parse(fs.readFileSync(KEYSTORE).toString())
-    privateKey = '0x' + keythereum.recover(PASSWORD, keyObject).toString('hex')
     return privateKey
   }
   return '0x0000000000000000000000000000000000000000000000000000000000000001'
@@ -73,14 +92,18 @@ const config: HardhatConfig = {
     outDir: 'typechain',
     target: 'ethers-v5',
   },
+  etherscan: {
+    apiKey: 'API_KEY',
+    customChains: [],
+  },
   defaultNetwork: 'hardhat',
   networks: {
-    [NETWORK.MAINNET]: {
-      url: process.env.MAINNET_NODE_URL ?? '',
-      chainId: CHAINID.MAINNET,
+    [arbitrum.id]: {
+      url: arbitrum.rpcUrls.default.http[0],
+      chainId: arbitrum.id,
       accounts: [getMainnetPrivateKey()],
       gas: 'auto',
-      gasPrice: 1000000000, // 1Gwei
+      gasPrice: 'auto',
       gasMultiplier: 1,
       timeout: 3000000,
       httpHeaders: {},
@@ -89,12 +112,12 @@ const config: HardhatConfig = {
       tags: ['mainnet', 'prod'],
       companionNetworks: {},
     },
-    [NETWORK.GOERLI_DEV]: {
-      url: process.env.GOERLI_NODE_URL ?? '',
-      chainId: CHAINID.GOERLI,
+    [arbitrumGoerli.id]: {
+      url: arbitrumGoerli.rpcUrls.default.http[0],
+      chainId: arbitrumGoerli.id,
       accounts:
-        process.env.GOERLI_DEV_PRIVATE_KEY !== undefined
-          ? [process.env.GOERLI_DEV_PRIVATE_KEY]
+        process.env.DEV_PRIVATE_KEY !== undefined
+          ? [process.env.DEV_PRIVATE_KEY]
           : [],
       gas: 'auto',
       gasPrice: 'auto',
@@ -106,59 +129,8 @@ const config: HardhatConfig = {
       tags: ['testnet', 'dev'],
       companionNetworks: {},
     },
-    [NETWORK.POLYGON_DEV]: {
-      url: process.env.POLYGON_NODE_URL ?? '',
-      chainId: CHAINID.POLYGON,
-      accounts:
-        process.env.POLYGON_DEV_PRIVATE_KEY !== undefined
-          ? [process.env.POLYGON_DEV_PRIVATE_KEY]
-          : [],
-      gas: 'auto',
-      gasPrice: 'auto',
-      gasMultiplier: 1,
-      timeout: 3000000,
-      httpHeaders: {},
-      live: true,
-      saveDeployments: true,
-      tags: ['mainnet', 'dev'],
-      companionNetworks: {},
-    },
-    [NETWORK.GOERLI_BETA]: {
-      url: process.env.GOERLI_NODE_URL ?? '',
-      chainId: CHAINID.GOERLI,
-      accounts:
-        process.env.GOERLI_BETA_PRIVATE_KEY !== undefined
-          ? [process.env.GOERLI_BETA_PRIVATE_KEY]
-          : [],
-      gas: 'auto',
-      gasPrice: 'auto',
-      gasMultiplier: 1,
-      timeout: 3000000,
-      httpHeaders: {},
-      live: true,
-      saveDeployments: true,
-      tags: ['testnet', 'dev'],
-      companionNetworks: {},
-    },
-    [NETWORK.POLYGON_BETA]: {
-      url: process.env.POLYGON_NODE_URL ?? '',
-      chainId: CHAINID.POLYGON,
-      accounts:
-        process.env.POLYGON_BETA_PRIVATE_KEY !== undefined
-          ? [process.env.POLYGON_BETA_PRIVATE_KEY]
-          : [],
-      gas: 'auto',
-      gasPrice: 'auto',
-      gasMultiplier: 1,
-      timeout: 3000000,
-      httpHeaders: {},
-      live: true,
-      saveDeployments: true,
-      tags: ['mainnet', 'dev'],
-      companionNetworks: {},
-    },
-    [NETWORK.HARDHAT]: {
-      chainId: CHAINID.HARDHAT,
+    hardhat: {
+      chainId: localhost.id,
       gas: 20000000,
       gasPrice: 250000000000,
       gasMultiplier: 1,
