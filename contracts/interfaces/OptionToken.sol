@@ -7,13 +7,13 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 interface OptionToken {
-    event Mint(address indexed minter, uint256 amount);
+    event Write(address indexed writer, uint256 amount);
 
-    event Cancel(address indexed payer, uint256 amount);
+    event Cancel(address indexed writer, uint256 amount);
 
     event Exercise(address indexed recipient, uint256 amount);
 
-    event Cancel(address indexed recipient, uint256 amount);
+    event Claim(address indexed recipient, uint256 amount);
 
     event CollectFee(address indexed recipient, uint256 amount);
 
@@ -38,8 +38,6 @@ interface OptionToken {
     function repay(uint256 amount) external;
 
     function exercise(uint256 amount) external;
-
-    //    function flashExercise(uint256 amount, bytes calldata data) external;
 
     function redeem(uint256 amount) external;
 }

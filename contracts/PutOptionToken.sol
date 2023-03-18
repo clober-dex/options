@@ -77,7 +77,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         collateral[msg.sender] += collateralAmount;
 
         _mint(msg.sender, amount);
-        emit Mint(msg.sender, amount);
+
+        emit Write(msg.sender, amount);
     }
 
     function cancel(uint256 amount) external nonReentrant {
@@ -90,6 +91,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         _burn(msg.sender, amount);
 
         _quoteToken.transfer(msg.sender, collateralAmount);
+
         emit Cancel(msg.sender, amount);
     }
 
@@ -106,6 +108,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         exerciseFeeBalance += feeAmount;
 
         _quoteToken.transfer(msg.sender, collateralAmount - feeAmount);
+
         exercisedAmount += amount;
 
         emit Exercise(msg.sender, amount);
@@ -126,7 +129,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
         _underlyingToken.transfer(msg.sender, redeemableUnderlyingAmount);
 
-        emit Cancel(msg.sender, amount);
+        emit Claim(msg.sender, amount);
     }
 
     function collectFee() external onlyOwner nonReentrant {
