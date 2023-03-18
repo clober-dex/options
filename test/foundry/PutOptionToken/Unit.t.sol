@@ -21,14 +21,16 @@ contract PutOptionsUnitTest is Test {
             address(quoteToken),
             address(underlyingToken),
             10**12,
-            1679574903 + 24 * 60 * 60,
+            24 * 60 * 60,
             10000 // 1%
         );
     }
 
-    function testERC20() public {
+    function testViewFunction() public {
         assertEq(putOptions.name(), "Mock Put Option", "EXACT_NAME");
         assertEq(putOptions.symbol(), "M-P", "EXACT_STMBOL");
         assertEq(putOptions.decimals(), 18, "EXACT_DECIMALS");
+        assertEq(putOptions.quoteToken(), address(quoteToken), "EXACT_QUOTE_TOKEN");
+        assertEq(putOptions.underlyingToken(), address(underlyingToken), "EXACT_UNDERLYING_TOKEN");
     }
 }

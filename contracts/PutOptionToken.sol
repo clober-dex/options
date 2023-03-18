@@ -16,10 +16,10 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
     uint256 private constant _PRECISION = 10**18;
 
-    uint256 private immutable _UNDERLYING_PRECISION;
-    IERC20 private immutable _underlyingToken;
     uint256 private immutable _QUOTE_PRECISION;
     IERC20 private immutable _quoteToken;
+    uint256 private immutable _UNDERLYING_PRECISION;
+    IERC20 private immutable _underlyingToken;
 
     mapping(address => uint256) private _collateral;
     uint256 public exercisedAmount;
@@ -47,10 +47,10 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         string memory name_,
         string memory symbol_
     ) ERC20(name_, symbol_) {
-        _underlyingToken = IERC20(underlyingToken_);
-        _UNDERLYING_PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
-        _quoteToken = IERC20(quoteToken_);
-        _QUOTE_PRECISION = 10**IERC20Metadata(quoteToken_).decimals();
+        _quoteToken = IERC20(underlyingToken_);
+        _QUOTE_PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
+        _underlyingToken = IERC20(quoteToken_);
+        _UNDERLYING_PRECISION = 10**IERC20Metadata(quoteToken_).decimals();
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
@@ -58,18 +58,18 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function underlyingToken() external view returns (address) {
-        return address(_underlyingToken);
+        return address(_quoteToken);
     }
 
     function quoteToken() external view returns (address) {
-        return address(_quoteToken);
+        return address(_underlyingToken);
     }
 
     function mint(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
+        _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
 
         _collateral[msg.sender] += collateralAmount;
         _mint(msg.sender, amount);
@@ -78,7 +78,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
     function repay(uint256 amount) external nonReentrant {
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
-        _underlyingToken.transfer(msg.sender, collateralAmount);
+        _quoteToken.transfer(msg.sender, collateralAmount);
         _collateral[msg.sender] -= collateralAmount;
         _burn(msg.sender, amount);
         emit Repay(msg.sender, amount);
@@ -94,13 +94,13 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
 
-        _underlyingToken.transfer(msg.sender, collateralAmount);
+        _quoteToken.transfer(msg.sender, collateralAmount);
         exercisedAmount += amount;
         emit Exercise(msg.sender, amount);
     }
 
     function exercise(uint256 amount) external nonReentrant {
-        _quoteToken.safeTransferFrom(msg.sender, address(this), (amount * _QUOTE_PRECISION) / _PRECISION);
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), (amount * _UNDERLYING_PRECISION) / _PRECISION);
         _exercise(amount);
     }
 
@@ -113,14 +113,14 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 redeemableQuoteAmount = (amount * exercisedAmount) / _PRECISION / (expiredAmount + exercisedAmount);
 
         _collateral[msg.sender] -= (amount * strikePrice) / _PRECISION;
-        _underlyingToken.transfer(msg.sender, redeemableUnderlyingAmount);
-        _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
+        _quoteToken.transfer(msg.sender, redeemableUnderlyingAmount);
+        _underlyingToken.transfer(msg.sender, redeemableQuoteAmount);
 
         emit Redeem(msg.sender, amount);
     }
 
     function collectFee() external onlyOwner nonReentrant {
-        _quoteToken.transfer(msg.sender, exerciseFeeBalance - 1);
+        _underlyingToken.transfer(msg.sender, exerciseFeeBalance - 1);
         exerciseFeeBalance = 1;
 
         emit CollectFee(msg.sender, exerciseFeeBalance - 1);
