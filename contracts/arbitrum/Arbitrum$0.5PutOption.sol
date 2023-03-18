@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 
 import "../PutOptionToken.sol";
 
-contract Arbitrum$0_5PutOption is PutOptionToken {
+contract Arbitrum$0$5PutOption is PutOptionToken {
     constructor()
         PutOptionToken(
             0x912CE59144191C1204E64559FE8253a0e49E6548,
