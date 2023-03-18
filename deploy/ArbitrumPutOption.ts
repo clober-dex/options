@@ -1,12 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { DeployFunction } from 'hardhat-deploy/types'
 
-import {
-  ARB_TOKEN_ADDRESS,
-  EXPIRES_AT,
-  QUOTE_TOKEN_ADDRESS,
-  WAD,
-} from './constants'
+import { ARB_TOKEN_ADDRESS, QUOTE_TOKEN_ADDRESS } from './constants'
 
 const deployFunction: DeployFunction = async function (
   hre: HardhatRuntimeEnvironment,
