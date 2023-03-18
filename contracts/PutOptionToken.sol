@@ -16,7 +16,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
     uint8 private immutable _DECIMALS;
     uint256 private immutable _PRECISION;
-    uint256 private immutable _QUOTE_PRECISION;
 
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
@@ -52,7 +51,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
         _DECIMALS = IERC20Metadata(underlyingToken_).decimals();
         _PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
-        _QUOTE_PRECISION = 10**IERC20Metadata(quoteToken_).decimals();
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
@@ -96,7 +94,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function _exercise(uint256 amount) private {
-        require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         amount = (collateralAmount * _PRECISION) / strikePrice;
@@ -113,8 +110,22 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function exercise(uint256 amount) external nonReentrant {
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), (amount * _PRECISION) / _PRECISION);
-        _exercise(amount);
+        require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
+
+        uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        amount = (collateralAmount * _PRECISION) / strikePrice;
+
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
+
+        _burn(msg.sender, amount);
+
+        uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
+        exerciseFeeBalance += feeAmount;
+
+        _quoteToken.transfer(msg.sender, collateralAmount - feeAmount);
+        exercisedAmount += amount;
+
+        emit Exercise(msg.sender, amount);
     }
 
     function claim() external nonReentrant {
