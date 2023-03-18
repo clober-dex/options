@@ -14,9 +14,9 @@ import "./interfaces/OptionToken.sol";
 contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
-    uint8 private immutable _DECIMALS;
-    uint256 private immutable _PRECISION;
+    uint256 private immutable _PRECISION = 10**18;
 
+    uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
 
@@ -49,8 +49,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         _underlyingToken = IERC20(underlyingToken_);
         _quoteToken = IERC20(quoteToken_);
 
-        _DECIMALS = IERC20Metadata(underlyingToken_).decimals();
-        _PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
+        _decimals = IERC20Metadata(underlyingToken_).decimals();
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
@@ -58,7 +57,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function decimals() public view override returns (uint8) {
-        return _DECIMALS;
+        return _decimals;
     }
 
     function underlyingToken() external view returns (address) {
@@ -143,7 +142,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
         _underlyingToken.transfer(msg.sender, redeemableUnderlyingAmount);
 
-        emit Redeem(msg.sender, amount);
+        emit Cancel(msg.sender, amount);
     }
 
     function collectFee() external onlyOwner nonReentrant {

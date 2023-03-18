@@ -13,7 +13,7 @@ interface OptionToken {
 
     event Exercise(address indexed recipient, uint256 amount);
 
-    event Redeem(address indexed recipient, uint256 amount);
+    event Cancel(address indexed recipient, uint256 amount);
 
     event CollectFee(address indexed recipient, uint256 amount);
 
