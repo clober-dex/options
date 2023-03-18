@@ -14,7 +14,7 @@ import "./interfaces/OptionToken.sol";
 contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
-    uint256 private immutable _PRECISION = 10**18;
+    uint256 private constant _PRECISION = 10**18;
 
     uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;
@@ -31,10 +31,9 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     // Redeem => expiresAt > timestamp
     uint256 public immutable expiresAt;
 
-    uint256 private constant _FEE_PRECISION = 10**6;
-    uint256 public immutable exerciseFee;
-
-    uint256 public exerciseFeeBalance; // underlyingToken
+    uint256 private constant _FEE_PRECISION = 10**4;
+    uint256 public immutable exerciseFee; // bp
+    uint256 public exerciseFeeBalance; // quote
 
     constructor(
         address underlyingToken_,
@@ -122,8 +121,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 collateralAmount = collateral[msg.sender];
         uint256 amount = (collateralAmount * _PRECISION) / strikePrice;
 
-        uint256 redeemableQuoteAmount = collateralAmount * expiredAmount / totalWrittenAmount;
-        uint256 redeemableUnderlyingAmount = amount * exercisedAmount / totalWrittenAmount;
+        uint256 redeemableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
+        uint256 redeemableUnderlyingAmount = (amount * exercisedAmount) / totalWrittenAmount;
 
         collateral[msg.sender] = 0;
         _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
