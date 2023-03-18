@@ -31,7 +31,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     // Redeem => expiresAt > timestamp
     uint256 public immutable expiresAt;
 
-    uint256 private constant _FEE_PRECISION = 10**4;
+    uint256 private constant _FEE_PRECISION = 10**6;
     uint256 public immutable exerciseFee; // bp
     uint256 public exerciseFeeBalance; // quote
 
