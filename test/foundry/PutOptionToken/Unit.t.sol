@@ -13,6 +13,9 @@ contract PutOptionsUnitTest is Test {
     MockQuoteToken quoteToken;
     MockUnderlyingToken underlyingToken;
 
+    address constant MINTER = address(1);
+    uint256 constant MINT_AMOUNT = 100 * 10**18;
+
     function setUp() public {
         quoteToken = new MockQuoteToken();
         underlyingToken = new MockUnderlyingToken();
@@ -20,7 +23,7 @@ contract PutOptionsUnitTest is Test {
         putOptions = new MockPutOption(
             address(quoteToken),
             address(underlyingToken),
-            10**12,
+            2 * 10**18,
             24 * 60 * 60,
             10000 // 1%
         );
@@ -33,4 +36,6 @@ contract PutOptionsUnitTest is Test {
         assertEq(putOptions.quoteToken(), address(quoteToken), "EXACT_QUOTE_TOKEN");
         assertEq(putOptions.underlyingToken(), address(underlyingToken), "EXACT_UNDERLYING_TOKEN");
     }
+
+    function testMint() public {}
 }

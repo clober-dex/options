@@ -14,11 +14,11 @@ import "./interfaces/OptionToken.sol";
 contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
-    uint256 private constant _PRECISION = 10**18;
-
+    uint8 private immutable _DECIMALS;
+    uint256 private immutable _PRECISION;
     uint256 private immutable _QUOTE_PRECISION;
+
     IERC20 private immutable _quoteToken;
-    uint256 private immutable _UNDERLYING_PRECISION;
     IERC20 private immutable _underlyingToken;
 
     mapping(address => uint256) private _collateral;
@@ -47,21 +47,27 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         string memory name_,
         string memory symbol_
     ) ERC20(name_, symbol_) {
-        _quoteToken = IERC20(underlyingToken_);
-        _QUOTE_PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
-        _underlyingToken = IERC20(quoteToken_);
-        _UNDERLYING_PRECISION = 10**IERC20Metadata(quoteToken_).decimals();
+        _quoteToken = IERC20(quoteToken_);
+        _underlyingToken = IERC20(underlyingToken_);
+
+        _DECIMALS = IERC20Metadata(underlyingToken_).decimals();
+        _PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
+        _QUOTE_PRECISION = 10**IERC20Metadata(quoteToken_).decimals();
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
         exerciseFee = exerciseFee_;
     }
 
-    function underlyingToken() external view returns (address) {
-        return address(_quoteToken);
+    function decimals() public view override returns (uint8) {
+        return _DECIMALS;
     }
 
     function quoteToken() external view returns (address) {
+        return address(_quoteToken);
+    }
+
+    function underlyingToken() external view returns (address) {
         return address(_underlyingToken);
     }
 
@@ -100,7 +106,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function exercise(uint256 amount) external nonReentrant {
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), (amount * _UNDERLYING_PRECISION) / _PRECISION);
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), (amount * _PRECISION) / _PRECISION);
         _exercise(amount);
     }
 
