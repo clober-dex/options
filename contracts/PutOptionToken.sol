@@ -72,6 +72,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         amount = (collateralAmount * _PRECISION) / strikePrice;
+        require(amount > 0, "INVALID_AMOUNT");
 
         _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
         collateral[msg.sender] += collateralAmount;
@@ -86,6 +87,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         amount = (collateralAmount * _PRECISION) / strikePrice;
+        require(amount > 0, "INVALID_AMOUNT");
 
         collateral[msg.sender] -= collateralAmount;
         _burn(msg.sender, amount);
@@ -100,6 +102,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
         amount = (collateralAmount * _PRECISION) / strikePrice;
+        require(amount > 0, "INVALID_AMOUNT");
 
         _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
         _burn(msg.sender, amount);
@@ -122,8 +125,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 collateralAmount = collateral[msg.sender];
         uint256 amount = (collateralAmount * _PRECISION) / strikePrice;
 
-        uint256 redeemableQuoteAmount = collateralAmount * expiredAmount / totalWrittenAmount;
-        uint256 redeemableUnderlyingAmount = amount * exercisedAmount / totalWrittenAmount;
+        uint256 redeemableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
+        uint256 redeemableUnderlyingAmount = (amount * exercisedAmount) / totalWrittenAmount;
 
         collateral[msg.sender] = 0;
         _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
