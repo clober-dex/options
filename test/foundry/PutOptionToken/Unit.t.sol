@@ -24,7 +24,7 @@ contract PutOptionsUnitTest is Test {
     address constant WRITER2 = address(2);
     address constant WRITER3 = address(3);
     address constant EXERCISER = address(4);
-    uint256 constant WRITE_AMOUNT = 90 * 10 ** 18;
+    uint256 constant WRITE_AMOUNT = 90 * 10**18;
     uint256 FEE = 1000; // 0.1%
 
     function setUp() public {
@@ -34,34 +34,39 @@ contract PutOptionsUnitTest is Test {
         address quote = address(quoteToken);
         address underlying = address(underlyingToken);
 
-        put0_5OptionToken = new MockPutOptionToken(underlying, quote, 5 * 10 ** 17, 1 days, FEE);
-        put1OptionToken = new MockPutOptionToken(underlying, quote, 10 ** 18, 1 days, FEE);
-        put2OptionToken = new MockPutOptionToken(underlying, quote, 2 * 10 ** 18, 1 days, FEE);
-        put4OptionToken = new MockPutOptionToken(underlying, quote, 4 * 10 ** 18, 1 days, FEE);
-        put8OptionToken = new MockPutOptionToken(underlying, quote, 8 * 10 ** 18, 1 days, FEE);
-        put16OptionToken = new MockPutOptionToken(underlying, quote, 16 * 10 ** 18, 1 days, FEE);
+        put0_5OptionToken = new MockPutOptionToken(underlying, quote, 5 * 10**17, 1 days, FEE);
+        put1OptionToken = new MockPutOptionToken(underlying, quote, 10**18, 1 days, FEE);
+        put2OptionToken = new MockPutOptionToken(underlying, quote, 2 * 10**18, 1 days, FEE);
+        put4OptionToken = new MockPutOptionToken(underlying, quote, 4 * 10**18, 1 days, FEE);
+        put8OptionToken = new MockPutOptionToken(underlying, quote, 8 * 10**18, 1 days, FEE);
+        put16OptionToken = new MockPutOptionToken(underlying, quote, 16 * 10**18, 1 days, FEE);
     }
 
     function testViewFunction() public {
         assertEq(put2OptionToken.name(), "Mock Put Option", "EXACT_NAME");
-        assertEq(put2OptionToken.symbol(), "M-P", "EXACT_STMBOL");
+        assertEq(put2OptionToken.symbol(), "M-P", "EXACT_SYMBOL");
         assertEq(put2OptionToken.decimals(), 18, "EXACT_DECIMALS");
         assertEq(put2OptionToken.quoteToken(), address(quoteToken), "EXACT_QUOTE_TOKEN");
         assertEq(put2OptionToken.underlyingToken(), address(underlyingToken), "EXACT_UNDERLYING_TOKEN");
         assertEq(put2OptionToken.strikePrice(), 2 * 10**18, "EXACT_STRIKE_PRICE");
     }
 
-    function _write(address putOption, uint256 amount, address user) private {
+    function _write(
+        address putOption,
+        uint256 amount,
+        address user
+    ) private {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
-        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10 ** underlyingToken.decimals());
+        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**underlyingToken.decimals());
         quoteToken.mint(user, quoteAmount);
 
         uint256 beforeCollateral = optionToken.collateral(user);
         uint256 beforeOptionBalance = optionToken.balanceOf(user);
         uint256 beforeQuoteBalance = quoteToken.balanceOf(user);
+
         vm.prank(WRITER1);
-        quoteToken.approve(address(optionToken), quoteAmount);
+        quoteToken.approve(putOption, quoteAmount);
         vm.prank(WRITER1);
         optionToken.write(amount);
 
@@ -72,26 +77,30 @@ contract PutOptionsUnitTest is Test {
 
     function _exercise(
         address putOption,
-        uint256 amount, address user) private {
+        uint256 amount,
+        address user
+    ) private {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
-        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10 ** underlyingToken.decimals());
+        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18);
+        underlyingToken.mint(user, amount);
 
         uint256 beforeOptionBalance = optionToken.balanceOf(user);
         uint256 beforeUnderlyingBalance = underlyingToken.balanceOf(user);
         uint256 beforeQuoteBalance = quoteToken.balanceOf(user);
 
-        if (beforeOptionBalance < amount) {
-            vm.expectRevert(stdError.arithmeticError);
-            vm.prank(user);
-        } else {}
-        vm.prank(WRITER1);
-        quoteToken.approve(address(optionToken), quoteAmount);
-        vm.prank(WRITER1);
-        optionToken.write(amount);
+        vm.prank(EXERCISER);
+        underlyingToken.approve(putOption, amount);
+        vm.prank(EXERCISER);
+        optionToken.exercise(amount);
 
+        assertEq(optionToken.balanceOf(user), beforeOptionBalance - amount, "EXACT_WRITE_AMOUNT");
         assertEq(underlyingToken.balanceOf(user), beforeUnderlyingBalance - amount, "EXACT_WRITE_AMOUNT");
-        assertEq(quoteToken.balanceOf(user), beforeQuoteBalance + quoteAmount, "EXACT_QUOTE_AMOUNT");
+        assertEq(
+            quoteToken.balanceOf(user),
+            beforeQuoteBalance + quoteAmount - (quoteAmount * FEE) / 10**6,
+            "EXACT_QUOTE_AMOUNT"
+        );
     }
 
     function _transfer(
@@ -133,6 +142,12 @@ contract PutOptionsUnitTest is Test {
         _write(address(put4OptionToken), WRITE_AMOUNT, WRITER1);
         _write(address(put8OptionToken), WRITE_AMOUNT, WRITER1);
         _write(address(put16OptionToken), WRITE_AMOUNT, WRITER1);
+        _write(address(put0_5OptionToken), WRITE_AMOUNT, WRITER1);
+        _write(address(put1OptionToken), WRITE_AMOUNT, WRITER1);
+        _write(address(put2OptionToken), WRITE_AMOUNT, WRITER1);
+        _write(address(put4OptionToken), WRITE_AMOUNT, WRITER1);
+        _write(address(put8OptionToken), WRITE_AMOUNT, WRITER1);
+        _write(address(put16OptionToken), WRITE_AMOUNT, WRITER1);
     }
 
     function testTokenTransfer() public {
@@ -142,12 +157,12 @@ contract PutOptionsUnitTest is Test {
     }
 
     function testExercise() public {
-        vm.warp(90000);
+        _write(address(put0_5OptionToken), WRITE_AMOUNT, WRITER1);
+        _transfer(address(put0_5OptionToken), WRITER1, EXERCISER, WRITE_AMOUNT);
+        _exercise(address(put0_5OptionToken), WRITE_AMOUNT, EXERCISER);
     }
 
-    function testClaim() public {
-
-    }
+    function testClaim() public {}
 
     function testCancel() public {}
 }
