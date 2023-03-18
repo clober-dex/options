@@ -20,7 +20,6 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
-    uint256 public immutable strikePrice;
     uint256 private immutable _quotePrecisionComplement; // 10**(18 - d)
 
     // Write => timestamp <= expiresAt
@@ -29,6 +28,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     // Redeem => expiresAt > timestamp
     uint256 public immutable expiresAt;
     uint256 public immutable exerciseFee; // bp
+    uint256 public immutable strikePrice;
 
     mapping(address => uint256) public collateral;
     uint256 public exercisedAmount;
@@ -45,6 +45,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     ) ERC20(name_, symbol_) {
         _underlyingToken = IERC20(underlyingToken_);
         _quoteToken = IERC20(quoteToken_);
+        _quotePrecisionComplement = 10**(18 - IERC20Metadata(quoteToken_).decimals());
 
         _decimals = IERC20Metadata(underlyingToken_).decimals();
 
@@ -69,7 +70,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
-        amount = (collateralAmount * _PRECISION) / strikePrice;
+        amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
         _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
@@ -84,7 +85,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
-        amount = (collateralAmount * _PRECISION) / strikePrice;
+        amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
         collateral[msg.sender] -= collateralAmount;
@@ -99,7 +100,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
-        amount = (collateralAmount * _PRECISION) / strikePrice;
+        amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
         _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
@@ -121,7 +122,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
 
         uint256 collateralAmount = collateral[msg.sender];
-        uint256 amount = (collateralAmount * _PRECISION) / strikePrice;
+        uint256 amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
 
         uint256 claimableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
         uint256 claimableUnderlyingAmount = (amount * exercisedAmount) / totalWrittenAmount;
