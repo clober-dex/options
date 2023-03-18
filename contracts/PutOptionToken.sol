@@ -124,8 +124,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         uint256 collateralAmount = collateral[msg.sender];
         uint256 amount = (collateralAmount * _PRECISION) / strikePrice;
 
-        uint256 redeemableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
-        uint256 redeemableUnderlyingAmount = (amount * exercisedAmount) / totalWrittenAmount;
+        uint256 claimableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
+        uint256 claimableUnderlyingAmount = (amount * exercisedAmount) / totalWrittenAmount;
 
         collateral[msg.sender] = 0;
         _quoteToken.transfer(msg.sender, redeemableQuoteAmount);
