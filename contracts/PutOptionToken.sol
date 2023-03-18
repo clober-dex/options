@@ -26,8 +26,8 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
 
     uint256 public immutable strikePrice;
 
-    // Mint => timestamp <= expiresAt
-    // Repay => timestamp <= expiresAt
+    // Write => timestamp <= expiresAt
+    // Cancel => timestamp <= expiresAt
     // Exercise => timestamp <= expiresAt
     // Redeem => expiresAt > timestamp
     uint256 public immutable expiresAt;
@@ -75,6 +75,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        amount = (collateralAmount * _PRECISION) / strikePrice;
         _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
 
         collateral[msg.sender] += collateralAmount;
@@ -82,7 +83,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         emit Mint(msg.sender, amount);
     }
 
-    function repay(uint256 amount) external nonReentrant {
+    function cancel(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
         uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
