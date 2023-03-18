@@ -5,14 +5,14 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./libary/BoringERC20.sol";
 import "./interfaces/OptionToken.sol";
 
 contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
-    using BoringERC20 for IERC20;
+    using SafeERC20 for IERC20;
 
     uint256 private constant _PRECISION = 10**18;
 
@@ -48,9 +48,9 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
         string memory symbol_
     ) ERC20(name_, symbol_) {
         _underlyingToken = IERC20(underlyingToken_);
-        _UNDERLYING_PRECISION = 10**IERC20(underlyingToken_).safeDecimals();
+        _UNDERLYING_PRECISION = 10**IERC20Metadata(underlyingToken_).decimals();
         _quoteToken = IERC20(quoteToken_);
-        _QUOTE_PRECISION = 10**IERC20(quoteToken_).safeDecimals();
+        _QUOTE_PRECISION = 10**IERC20Metadata(quoteToken_).decimals();
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
