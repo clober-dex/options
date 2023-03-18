@@ -64,6 +64,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.2",
-    "@wagmi/chains": "^0.2.13"
+    "@wagmi/chains": "^0.2.13",
+    "bignumber.js": "^9.1.1"
   }
 }
