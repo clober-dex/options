@@ -306,4 +306,24 @@ contract PutOptionsUnitTest is Test {
         assertEq(put0_5OptionToken.balanceOf(WRITER2), 0, "EXACT_OPTION_AMOUNT");
         assertEq(put0_5OptionToken.collateral(WRITER2), 0, "EXACT_COLLATERAL_AMOUNT");
     }
+
+    function testCollectFee() public {
+        _write(address(put1OptionToken), 10**18, WRITER1);
+        _transfer(address(put1OptionToken), WRITER1, EXERCISER, 10**18);
+
+        underlyingToken.mint(EXERCISER, 10**18);
+        vm.prank(EXERCISER);
+        underlyingToken.approve(address(put1OptionToken), 10**18);
+        vm.prank(EXERCISER);
+        put1OptionToken.exercise(10**18);
+
+        uint256 ownerQuoteBalance = quoteToken.balanceOf(put1OptionToken.owner());
+
+        vm.warp(1 days + 1);
+
+        put1OptionToken.collectFee();
+        uint256 collectedFee = quoteToken.balanceOf(put1OptionToken.owner()) - ownerQuoteBalance;
+
+        assertEq(collectedFee, 1000, "Collect fee");
+    }
 }
