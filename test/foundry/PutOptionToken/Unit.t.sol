@@ -261,6 +261,46 @@ contract PutOptionsUnitTest is Test {
         _claim(address(put0_5OptionToken), WRITER1);
     }
 
+    function testClaimWithValues() public {
+        uint256 amount1 = 1 * 10**18;
+        uint256 amount2 = 2 * 10**18;
+        uint256 amount3 = 3 * 10**18;
+        _write(address(put0_5OptionToken), amount1, WRITER1);
+        _write(address(put0_5OptionToken), amount2, WRITER2);
+        _write(address(put0_5OptionToken), amount3, WRITER3);
+        _transfer(address(put0_5OptionToken), WRITER1, EXERCISER, amount1);
+        _transfer(address(put0_5OptionToken), WRITER2, EXERCISER, amount2);
+        _transfer(address(put0_5OptionToken), WRITER3, EXERCISER, amount3);
+        // 1/3 of the options are exercised
+        _exercise(address(put0_5OptionToken), 2 * 10**18, EXERCISER);
+
+        vm.warp(1 days + 1);
+
+        uint256 collateral = put0_5OptionToken.collateral(WRITER1);
+        vm.prank(WRITER1);
+        put0_5OptionToken.claim();
+
+        assertEq(put0_5OptionToken.collateral(WRITER1), 0, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(underlyingToken.balanceOf(WRITER1), (amount1) / 3, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER1), (collateral * 2) / 3, "EXACT_COLLATERAL_AMOUNT");
+
+        collateral = put0_5OptionToken.collateral(WRITER2);
+        vm.prank(WRITER2);
+        put0_5OptionToken.claim();
+
+        assertEq(put0_5OptionToken.collateral(WRITER2), 0, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(underlyingToken.balanceOf(WRITER2), (amount2) / 3, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER2), (collateral * 2) / 3, "EXACT_COLLATERAL_AMOUNT");
+
+        collateral = put0_5OptionToken.collateral(WRITER3);
+        vm.prank(WRITER3);
+        put0_5OptionToken.claim();
+
+        assertEq(put0_5OptionToken.collateral(WRITER3), 0, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(underlyingToken.balanceOf(WRITER3), (amount3) / 3, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER3), (collateral * 2) / 3, "EXACT_COLLATERAL_AMOUNT");
+    }
+
     function testCancel() public {
         _write(address(put0_5OptionToken), WRITE_AMOUNT / 3, WRITER1);
         _write(address(put0_5OptionToken), (WRITE_AMOUNT * 2) / 3, WRITER1);
