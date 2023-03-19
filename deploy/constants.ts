@@ -10,6 +10,10 @@ export const QUOTE_TOKEN_ADDRESS = (tags: Record<string, boolean>): string => {
     : '0xf3F8E2d3ab08BD619A794A85626970731c4174aA'
 }
 
+export const EXPIRES_AT = (tags: Record<string, boolean>): number => {
+  return 'mainnet' in tags ? 1679575187 + 24 * 60 * 60 : 1679230800
+}
+
 export const ARBITRUM_PUTOPTION_ADDRESS = (
   tags: Record<string, boolean>,
   strikePrice: number,
