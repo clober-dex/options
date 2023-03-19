@@ -134,7 +134,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     }
 
     function collectFee() external onlyOwner nonReentrant {
-        _underlyingToken.transfer(msg.sender, exerciseFeeBalance);
+        _quoteToken.transfer(msg.sender, exerciseFeeBalance);
         exerciseFeeBalance = 0;
 
         emit CollectFee(msg.sender, exerciseFeeBalance);
