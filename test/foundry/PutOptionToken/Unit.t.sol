@@ -59,7 +59,7 @@ contract PutOptionsUnitTest is Test {
     ) private {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
-        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18);
+        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18) / (10**(18 - quoteToken.decimals()));
         quoteToken.mint(user, quoteAmount);
 
         uint256 beforeCollateral = optionToken.collateral(user);
@@ -83,7 +83,7 @@ contract PutOptionsUnitTest is Test {
     ) private {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
-        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18);
+        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18) / (10**(18 - quoteToken.decimals()));
 
         uint256 beforeCollateral = optionToken.collateral(user);
         uint256 beforeOptionBalance = optionToken.balanceOf(user);
@@ -104,7 +104,7 @@ contract PutOptionsUnitTest is Test {
     ) private {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
-        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18);
+        uint256 quoteAmount = (optionToken.strikePrice() * amount) / (10**18) / (10**(18 - quoteToken.decimals()));
         underlyingToken.mint(user, amount);
 
         uint256 beforeOptionBalance = optionToken.balanceOf(user);
@@ -129,7 +129,8 @@ contract PutOptionsUnitTest is Test {
         PutOptionToken optionToken = PutOptionToken(putOption);
 
         uint256 beforeCollateral = optionToken.collateral(user);
-        uint256 writtenAmount = (beforeCollateral * 10**18) / optionToken.strikePrice();
+        uint256 writtenAmount = (beforeCollateral * 10**18 * 10**(18 - quoteToken.decimals())) /
+            optionToken.strikePrice();
         uint256 beforeUnderlyingBalance = underlyingToken.balanceOf(user);
         uint256 beforeQuoteBalance = quoteToken.balanceOf(user);
         uint256 totalWrittenAmount = optionToken.totalSupply() + optionToken.exercisedAmount();
