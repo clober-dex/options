@@ -245,22 +245,6 @@ contract PutOptionsUnitTest is Test {
         assertEq(underlyingToken.balanceOf(EXERCISER), 0, "EXACT_UNDERLYING_AMOUNT");
     }
 
-    function testClaim() public {
-        uint256 writtenAmount1 = _write(address(put0_5OptionToken), WRITE_AMOUNT / 3, WRITER1);
-        uint256 writtenAmount2 = _write(address(put0_5OptionToken), WRITE_AMOUNT / 6, WRITER2);
-        uint256 writtenAmount3 = _write(address(put0_5OptionToken), WRITE_AMOUNT / 9, WRITER3);
-
-        _transfer(address(put0_5OptionToken), WRITER1, EXERCISER, writtenAmount1);
-        _transfer(address(put0_5OptionToken), WRITER2, EXERCISER, writtenAmount2);
-        _transfer(address(put0_5OptionToken), WRITER3, EXERCISER, writtenAmount3);
-
-        _exercise(address(put0_5OptionToken), (WRITE_AMOUNT * 5) / 11, EXERCISER);
-
-        vm.warp(1 days + 1);
-
-        _claim(address(put0_5OptionToken), WRITER1);
-    }
-
     function testClaimWithValues() public {
         uint256 amount1 = 1 * 10**18;
         uint256 amount2 = 2 * 10**18;
@@ -299,13 +283,6 @@ contract PutOptionsUnitTest is Test {
         assertEq(put0_5OptionToken.collateral(WRITER3), 0, "EXACT_COLLATERAL_AMOUNT");
         assertEq(underlyingToken.balanceOf(WRITER3), (amount3) / 3, "EXACT_UNDERLYING_AMOUNT");
         assertEq(quoteToken.balanceOf(WRITER3), (collateral * 2) / 3, "EXACT_QUOTE_AMOUNT");
-    }
-
-    function testCancel() public {
-        _write(address(put0_5OptionToken), WRITE_AMOUNT / 3, WRITER1);
-        _write(address(put0_5OptionToken), (WRITE_AMOUNT * 2) / 3, WRITER1);
-        _cancel(address(put0_5OptionToken), WRITE_AMOUNT / 3, WRITER1);
-        _cancel(address(put0_5OptionToken), (WRITE_AMOUNT * 2) / 3, WRITER1);
     }
 
     function testCancelWithValues() public {
