@@ -20,7 +20,25 @@ contract OptionViewer {
         uint256 $16;
     }
 
+    struct ExercisedAmount {
+        uint256 $0_5;
+        uint256 $1;
+        uint256 $2;
+        uint256 $4;
+        uint256 $8;
+        uint256 $16;
+    }
+
     struct OptionTokenBalance {
+        uint256 $0_5;
+        uint256 $1;
+        uint256 $2;
+        uint256 $4;
+        uint256 $8;
+        uint256 $16;
+    }
+
+    struct OptionTotalSupply {
         uint256 $0_5;
         uint256 $1;
         uint256 $2;
@@ -76,6 +94,42 @@ contract OptionViewer {
         option$4 = option$4_;
         option$8 = option$8_;
         option$16 = option$16_;
+    }
+
+    function getOptionAddress()
+        external
+        view
+        returns (
+            address,
+            address,
+            address,
+            address,
+            address,
+            address
+        )
+    {
+        return (option$0_5, option$1, option$2, option$4, option$8, option$16);
+    }
+
+    function getOptionAmount() external view returns (ExercisedAmount memory, OptionTotalSupply memory) {
+        return (
+            ExercisedAmount(
+                Arbitrum$0_5PutOption(option$0_5).exercisedAmount(),
+                Arbitrum$1PutOption(option$1).exercisedAmount(),
+                Arbitrum$2PutOption(option$2).exercisedAmount(),
+                Arbitrum$4PutOption(option$4).exercisedAmount(),
+                Arbitrum$8PutOption(option$8).exercisedAmount(),
+                Arbitrum$16PutOption(option$16).exercisedAmount()
+            ),
+            OptionTotalSupply(
+                Arbitrum$0_5PutOption(option$0_5).totalSupply(),
+                Arbitrum$1PutOption(option$1).totalSupply(),
+                Arbitrum$2PutOption(option$2).totalSupply(),
+                Arbitrum$4PutOption(option$4).totalSupply(),
+                Arbitrum$8PutOption(option$8).totalSupply(),
+                Arbitrum$16PutOption(option$16).totalSupply()
+            )
+        );
     }
 
     function getUserBalance(address user)
