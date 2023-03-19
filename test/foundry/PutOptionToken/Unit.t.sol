@@ -195,6 +195,20 @@ contract PutOptionsUnitTest is Test {
         _write(address(put16OptionToken), WRITE_AMOUNT, WRITER1);
     }
 
+    function testWriteWithValues() public {
+        // Mint 1 fUSD
+        quoteToken.mint(WRITER1, 10**6);
+        // Approve fUSD and write 2 put options
+        vm.prank(WRITER1);
+        quoteToken.approve(address(put0_5OptionToken), 10**6);
+        vm.prank(WRITER1);
+        put0_5OptionToken.write(2 * 10**18);
+
+        assertEq(put0_5OptionToken.collateral(WRITER1), 10**6, "EXACT_COLLATERAL");
+        assertEq(put0_5OptionToken.balanceOf(WRITER1), 2 * 10**18, "EXACT_WRITE_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER1), 0, "EXACT_QUOTE_AMOUNT");
+    }
+
     function testTokenTransfer() public {
         _write(address(put2OptionToken), WRITE_AMOUNT, WRITER1);
         _transfer(address(put2OptionToken), WRITER1, EXERCISER, (WRITE_AMOUNT * 2) / 3);

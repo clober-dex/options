@@ -69,7 +69,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     function write(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        uint256 collateralAmount = (amount * strikePrice) / _PRECISION / _quotePrecisionComplement;
         amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
@@ -84,7 +84,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     function cancel(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        uint256 collateralAmount = (amount * strikePrice) / _PRECISION / _quotePrecisionComplement;
         amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
@@ -99,7 +99,7 @@ contract PutOptionToken is ERC20, OptionToken, ReentrancyGuard, Ownable {
     function exercise(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        uint256 collateralAmount = (amount * strikePrice) / _PRECISION;
+        uint256 collateralAmount = (amount * strikePrice) / _PRECISION / _quotePrecisionComplement;
         amount = (collateralAmount * _PRECISION * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
