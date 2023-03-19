@@ -281,24 +281,24 @@ contract PutOptionsUnitTest is Test {
         put0_5OptionToken.claim();
 
         assertEq(put0_5OptionToken.collateral(WRITER1), 0, "EXACT_COLLATERAL_AMOUNT");
-        assertEq(underlyingToken.balanceOf(WRITER1), (amount1) / 3, "EXACT_COLLATERAL_AMOUNT");
-        assertEq(quoteToken.balanceOf(WRITER1), (collateral * 2) / 3, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(underlyingToken.balanceOf(WRITER1), (amount1) / 3, "EXACT_UNDERLYING_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER1), (collateral * 2) / 3, "EXACT_QUOTE_AMOUNT");
 
         collateral = put0_5OptionToken.collateral(WRITER2);
         vm.prank(WRITER2);
         put0_5OptionToken.claim();
 
         assertEq(put0_5OptionToken.collateral(WRITER2), 0, "EXACT_COLLATERAL_AMOUNT");
-        assertEq(underlyingToken.balanceOf(WRITER2), (amount2) / 3, "EXACT_COLLATERAL_AMOUNT");
-        assertEq(quoteToken.balanceOf(WRITER2), (collateral * 2) / 3, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(underlyingToken.balanceOf(WRITER2), (amount2) / 3, "EXACT_UNDERLYING_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER2), (collateral * 2) / 3, "EXACT_QUOTE_AMOUNT");
 
         collateral = put0_5OptionToken.collateral(WRITER3);
         vm.prank(WRITER3);
         put0_5OptionToken.claim();
 
         assertEq(put0_5OptionToken.collateral(WRITER3), 0, "EXACT_COLLATERAL_AMOUNT");
-        assertEq(underlyingToken.balanceOf(WRITER3), (amount3) / 3, "EXACT_COLLATERAL_AMOUNT");
-        assertEq(quoteToken.balanceOf(WRITER3), (collateral * 2) / 3, "EXACT_COLLATERAL_AMOUNT");
+        assertEq(underlyingToken.balanceOf(WRITER3), (amount3) / 3, "EXACT_UNDERLYING_AMOUNT");
+        assertEq(quoteToken.balanceOf(WRITER3), (collateral * 2) / 3, "EXACT_QUOTE_AMOUNT");
     }
 
     function testCancel() public {
@@ -306,5 +306,27 @@ contract PutOptionsUnitTest is Test {
         _write(address(put0_5OptionToken), (WRITE_AMOUNT * 2) / 3, WRITER1);
         _cancel(address(put0_5OptionToken), WRITE_AMOUNT / 3, WRITER1);
         _cancel(address(put0_5OptionToken), (WRITE_AMOUNT * 2) / 3, WRITER1);
+    }
+
+    function testCancelWithValues() public {
+        _write(address(put0_5OptionToken), 1 * 10**18, WRITER1);
+        assertEq(quoteToken.balanceOf(WRITER1), 0, "EXACT_QUOTE_AMOUNT");
+        assertEq(put0_5OptionToken.balanceOf(WRITER1), 1 * 10**18, "EXACT_OPTION_AMOUNT");
+        assertEq(put0_5OptionToken.collateral(WRITER1), 5 * 10**5, "EXACT_COLLATERAL_AMOUNT");
+
+        _write(address(put0_5OptionToken), 2 * 10**18, WRITER2);
+        assertEq(quoteToken.balanceOf(WRITER2), 0, "EXACT_QUOTE_AMOUNT");
+        assertEq(put0_5OptionToken.balanceOf(WRITER2), 2 * 10**18, "EXACT_OPTION_AMOUNT");
+        assertEq(put0_5OptionToken.collateral(WRITER2), 10**6, "EXACT_COLLATERAL_AMOUNT");
+
+        _cancel(address(put0_5OptionToken), 3 * 10**17, WRITER1);
+        assertEq(quoteToken.balanceOf(WRITER1), 15 * 10**4, "EXACT_QUOTE_AMOUNT");
+        assertEq(put0_5OptionToken.balanceOf(WRITER1), 7 * 10**17, "EXACT_OPTION_AMOUNT");
+        assertEq(put0_5OptionToken.collateral(WRITER1), 35 * 10**4, "EXACT_COLLATERAL_AMOUNT");
+
+        _cancel(address(put0_5OptionToken), 2 * 10**18, WRITER2);
+        assertEq(quoteToken.balanceOf(WRITER2), 10**6, "EXACT_QUOTE_AMOUNT");
+        assertEq(put0_5OptionToken.balanceOf(WRITER2), 0, "EXACT_OPTION_AMOUNT");
+        assertEq(put0_5OptionToken.collateral(WRITER2), 0, "EXACT_COLLATERAL_AMOUNT");
     }
 }
