@@ -11,7 +11,7 @@ export const QUOTE_TOKEN_ADDRESS = (tags: Record<string, boolean>): string => {
 }
 
 export const EXPIRES_AT = (tags: Record<string, boolean>): number => {
-  return 'mainnet' in tags ? 1679575187 + 24 * 60 * 60 : 1679233500
+  return 'mainnet' in tags ? 1679575187 + 24 * 60 * 60 : 1679266800
 }
 
 export const ARBITRUM_PUTOPTION_ADDRESS = (
