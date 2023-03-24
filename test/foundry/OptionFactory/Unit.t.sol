@@ -24,19 +24,35 @@ contract OptionFactoryUnitTest is Test {
         optionFactory = new OptionFactory(address(underlyingToken), address(quoteToken), _FEE);
     }
 
-    function testName() public {
+    function testCallOptionName() public {
         CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
-        optionParams[0] = CloberOptionFactory.OptionParams(true, 1679637415, 1600 * 10**18);
+        optionParams[0] = CloberOptionFactory.OptionParams(true, 1679637415, 99 * 10**17);
         address[] memory aa = optionFactory.deployOptions(optionParams);
 
-        console.log(ERC20(aa[0]).name());
+        assertEq(ERC20(aa[0]).name(), "Fake ARB Call Options at 9.90 fUSD (exp.20230324)", "WRONG_NAME");
     }
 
-    function testSymbol() public {
+    function testPutOptionName() public {
         CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
-        optionParams[0] = CloberOptionFactory.OptionParams(true, 1679637415, 1600 * 10**18);
+        optionParams[0] = CloberOptionFactory.OptionParams(false, 1679637415, 1234 * 10**17);
         address[] memory aa = optionFactory.deployOptions(optionParams);
 
-        console.log(ERC20(aa[0]).symbol());
+        assertEq(ERC20(aa[0]).name(), "Fake ARB Put Options at 123 fUSD (exp.20230324)", "WRONG_NAME");
+    }
+
+    function testCallOptionSymbol() public {
+        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
+        optionParams[0] = CloberOptionFactory.OptionParams(true, 1679637415, 99 * 10**17);
+        address[] memory aa = optionFactory.deployOptions(optionParams);
+
+        assertEq(ERC20(aa[0]).symbol(), "fARB-20230324-9.90-C", "WRONG_SYMBOL");
+    }
+
+    function testPutOptionSymbol() public {
+        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
+        optionParams[0] = CloberOptionFactory.OptionParams(false, 1679637415, 1234 * 10**17);
+        address[] memory aa = optionFactory.deployOptions(optionParams);
+
+        assertEq(ERC20(aa[0]).symbol(), "fARB-20230324-123-P", "WRONG_SYMBOL");
     }
 }

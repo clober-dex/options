@@ -45,12 +45,13 @@ contract OptionFactory is CloberOptionFactory, Ownable {
                 // Ethereum Call Option Expires 230324-1800-C
                 abi.encodePacked(
                     IERC20(_underlyingToken).safeName(),
-                    optionParams[i].call ? " Call Options Expires At " : " Put Options Expires At ",
-                    StringUtils.toString(year * 10000 + month * 100 + day),
-                    "With Strike ",
+                    optionParams[i].call ? " Call Options at " : " Put Options at ",
                     strikePriceString,
                     " ",
-                    IERC20(_quoteToken).safeName()
+                    IERC20(_quoteToken).safeSymbol(),
+                    " (exp.",
+                    StringUtils.toString(year * 10000 + month * 100 + day),
+                    ")"
                 )
             );
             string memory symbol = string(
