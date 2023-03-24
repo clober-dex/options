@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-interface OptionToken {
+interface CloberOptionToken {
     event Write(address indexed writer, uint256 amount);
 
     event Cancel(address indexed writer, uint256 amount);
