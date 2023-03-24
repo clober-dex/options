@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./interfaces/CloberOptionToken.sol";
 
-contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
+contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     uint256 private constant _FEE_PRECISION = 10**6;
@@ -67,13 +67,10 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
 
     function write(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
-
-        uint256 collateralAmount = (amount * strikePrice) / _quotePrecisionComplement;
-        amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
-        _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
-        collateral[msg.sender] += collateralAmount;
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
+        collateral[msg.sender] += amount;
 
         _mint(msg.sender, amount);
 
@@ -82,45 +79,32 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
 
     function cancel(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
-
-        uint256 collateralAmount = (amount * strikePrice) / _quotePrecisionComplement;
-        amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
-        collateral[msg.sender] -= collateralAmount;
+        collateral[msg.sender] -= amount;
         _burn(msg.sender, amount);
 
-        _quoteToken.transfer(msg.sender, collateralAmount);
+        _underlyingToken.transfer(msg.sender, amount);
 
         emit Cancel(msg.sender, amount);
     }
 
     function exercise(uint256 amount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
-
-        uint256 collateralAmount = (amount * strikePrice) / _quotePrecisionComplement;
-        amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
         require(amount > 0, "INVALID_AMOUNT");
 
         _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
         _burn(msg.sender, amount);
 
-        uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
+        uint256 quoteAmount = (amount * strikePrice) / _quotePrecisionComplement;
+        uint256 feeAmount = (quoteAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
 
-        _quoteToken.transfer(msg.sender, collateralAmount - feeAmount);
+        _quoteToken.transfer(msg.sender, quoteAmount - feeAmount);
 
         exercisedAmount += amount;
 
         emit Exercise(msg.sender, amount);
-    }
-
-    function claim() external {
-        _claim(msg.sender);
-    }
-
-    function claim(address writer) external {
-        _claim(writer);
     }
 
     function _claim(address writer) internal nonReentrant {
@@ -129,16 +113,25 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
 
         uint256 collateralAmount = collateral[writer];
-        uint256 amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
+        require(collateralAmount > 0, "INVALID_AMOUNT");
 
-        uint256 claimableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
-        uint256 claimableUnderlyingAmount = (amount * exercisedAmount) / totalWrittenAmount;
+        uint256 claimableUnderlyingAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
+        uint256 claimableQuoteAmount = (collateralAmount * exercisedAmount * strikePrice) /
+            (totalWrittenAmount * _quotePrecisionComplement);
 
         collateral[writer] = 0;
         _quoteToken.transfer(writer, claimableQuoteAmount);
         _underlyingToken.transfer(writer, claimableUnderlyingAmount);
 
-        emit Claim(writer, amount);
+        emit Claim(writer, collateralAmount);
+    }
+
+    function claim() external {
+        _claim(msg.sender);
+    }
+
+    function claim(address writer) external {
+        _claim(writer);
     }
 
     function collectFee() external onlyOwner nonReentrant {
