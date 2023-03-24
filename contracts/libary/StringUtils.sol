@@ -44,11 +44,25 @@ library StringUtils {
 
     function uint256ToString(uint256 number, uint256 precision) internal pure returns (string memory) {
         if (number / precision == 0) {
-            return string(abi.encodePacked("0.", (number * 1000) / precision));
+            return string(abi.encodePacked("0.", toString(((number % precision) * 1000) / precision)));
         } else if (number / precision < 10) {
-            return string(abi.encodePacked(number / precision, ".", (number * 100) / precision));
+            return
+                string(
+                    abi.encodePacked(
+                        toString(number / precision),
+                        ".",
+                        toString(((number % precision) * 100) / precision)
+                    )
+                );
         } else if (number / precision < 100) {
-            return string(abi.encodePacked(number / precision, ".", (number * 10) / precision));
+            return
+                string(
+                    abi.encodePacked(
+                        toString(number / precision),
+                        ".",
+                        toString(((number % precision) * 10) / precision)
+                    )
+                );
         } else {
             return toString(number / precision);
         }
