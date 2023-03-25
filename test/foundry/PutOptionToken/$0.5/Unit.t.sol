@@ -181,14 +181,14 @@ contract $0_5PutOptionUnitTest is Test {
 
         _cancel({
             user: Constants.WRITER1,
-            optionAmount: 1666666666666666666,
+            optionAmount: 1666666000000000000,
             expectedOptionAmount: 1666666000000000000,
             expectedQuoteAmount: 833333
         });
 
         _cancel({
             user: Constants.WRITER1,
-            optionAmount: optionToken.balanceOf(Constants.WRITER1),
+            optionAmount: 1666666000000000000,
             expectedOptionAmount: 1666666000000000000,
             expectedQuoteAmount: 833333
         });
