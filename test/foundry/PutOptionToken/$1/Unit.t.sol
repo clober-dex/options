@@ -8,16 +8,16 @@ import "forge-std/Test.sol";
 import "../Constants.sol";
 import "../../../mocks/MockQuoteToken.sol";
 import "../../../mocks/MockUnderlyingToken.sol";
-import "../../../../contracts/arbitrum/Arbitrum$0.5PutOption.sol";
+import "../../../../contracts/arbitrum/Arbitrum$1PutOption.sol";
 
-contract $0_5PutOptionUnitTest is Test {
+contract $1PutOptionUnitTest is Test {
     event Write(address indexed writer, uint256 amount);
     event Cancel(address indexed writer, uint256 amount);
     event Exercise(address indexed recipient, uint256 amount);
     event Claim(address indexed recipient, uint256 amount);
     event CollectFee(address indexed recipient, uint256 amount);
 
-    Arbitrum$0_5PutOption optionToken;
+    Arbitrum$1PutOption optionToken;
 
     MockQuoteToken quoteToken;
     MockUnderlyingToken underlyingToken;
@@ -26,7 +26,7 @@ contract $0_5PutOptionUnitTest is Test {
         quoteToken = new MockQuoteToken();
         underlyingToken = new MockUnderlyingToken();
 
-        optionToken = new Arbitrum$0_5PutOption(address(underlyingToken), address(quoteToken), 1 days);
+        optionToken = new Arbitrum$1PutOption(address(underlyingToken), address(quoteToken), 1 days);
 
         // mint some tokens to the writers
         quoteToken.mint(address(this), 10000000 * (10**quoteToken.decimals()));
@@ -91,7 +91,7 @@ contract $0_5PutOptionUnitTest is Test {
             user: Constants.WRITER1,
             optionAmount: 2000 * (10**optionToken.decimals()),
             expectedOptionAmount: 2000 * (10**optionToken.decimals()),
-            expectedQuoteAmount: 1000 * (10**quoteToken.decimals())
+            expectedQuoteAmount: 2000 * (10**quoteToken.decimals())
         });
     }
 
@@ -99,8 +99,8 @@ contract $0_5PutOptionUnitTest is Test {
         _write({
             user: Constants.WRITER1,
             optionAmount: 3333333333333333333,
-            expectedOptionAmount: 3333332000000000000,
-            expectedQuoteAmount: 1666666
+            expectedOptionAmount: 3333333000000000000,
+            expectedQuoteAmount: 3333333
         });
     }
 
@@ -111,11 +111,11 @@ contract $0_5PutOptionUnitTest is Test {
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.write(1);
 
-        uint256 _maximumAmountToRevert = 2 * 10**(18 - quoteToken.decimals()) - 1;
+        uint256 _maximumAmountToRevert = 10**(18 - quoteToken.decimals()) - 1;
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.write(_maximumAmountToRevert);
 
-        uint256 _minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
+        uint256 _minimumAmountToNotRevert = 10**(18 - quoteToken.decimals());
         optionToken.write(_minimumAmountToNotRevert);
     }
 
@@ -160,21 +160,21 @@ contract $0_5PutOptionUnitTest is Test {
             user: Constants.WRITER1,
             optionAmount: 1000 * (10**optionToken.decimals()),
             expectedOptionAmount: 1000 * (10**optionToken.decimals()),
-            expectedQuoteAmount: 500 * (10**quoteToken.decimals())
+            expectedQuoteAmount: 1000 * (10**quoteToken.decimals())
         });
 
         _cancel({
             user: Constants.WRITER1,
             optionAmount: 1000 * (10**optionToken.decimals()),
             expectedOptionAmount: 1000 * (10**optionToken.decimals()),
-            expectedQuoteAmount: 500 * (10**quoteToken.decimals())
+            expectedQuoteAmount: 1000 * (10**quoteToken.decimals())
         });
         assertEq(optionToken.balanceOf(Constants.WRITER1), 0, "BEFORE_AFTER_BALANCE");
     }
 
     function testCancelRoundDownCase() public {
         uint256 _optionAmount = 3333333333333333333;
-        uint256 _expectedOptionAmount = 3333332000000000000;
+        uint256 _expectedOptionAmount = 3333333000000000000;
         vm.prank(Constants.WRITER1);
         optionToken.write(_optionAmount);
         assertEq(optionToken.balanceOf(Constants.WRITER1), _expectedOptionAmount, "BEFORE_OPTION_BALANCE");
@@ -183,14 +183,14 @@ contract $0_5PutOptionUnitTest is Test {
             user: Constants.WRITER1,
             optionAmount: 1666666666666666666,
             expectedOptionAmount: 1666666000000000000,
-            expectedQuoteAmount: 833333
+            expectedQuoteAmount: 1666666
         });
 
         _cancel({
             user: Constants.WRITER1,
             optionAmount: optionToken.balanceOf(Constants.WRITER1),
-            expectedOptionAmount: 1666666000000000000,
-            expectedQuoteAmount: 833333
+            expectedOptionAmount: 1666667000000000000,
+            expectedQuoteAmount: 1666667
         });
         assertEq(optionToken.balanceOf(Constants.WRITER1), 0, "BEFORE_AFTER_BALANCE");
     }
@@ -202,11 +202,11 @@ contract $0_5PutOptionUnitTest is Test {
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.cancel(1);
 
-        uint256 _maximumAmountToRevert = 2 * 10**(18 - quoteToken.decimals()) - 1;
+        uint256 _maximumAmountToRevert = 10**(18 - quoteToken.decimals()) - 1;
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.cancel(_maximumAmountToRevert);
 
-        uint256 _minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
+        uint256 _minimumAmountToNotRevert = 10**(18 - quoteToken.decimals());
         optionToken.write(_minimumAmountToNotRevert);
         optionToken.cancel(_minimumAmountToNotRevert);
     }
@@ -259,7 +259,7 @@ contract $0_5PutOptionUnitTest is Test {
             user: Constants.EXERCISER,
             optionAmount: _optionAmount,
             expectedOptionAmount: _optionAmount,
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - Constants.FEE)) /
+            expectedQuoteAmount: (2000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - Constants.FEE)) /
                 Constants.FEE_PRECISION,
             // underlying and option decimals are same
             expectedUnderlyingAmount: 2000 * (10**underlyingToken.decimals())
@@ -268,7 +268,7 @@ contract $0_5PutOptionUnitTest is Test {
 
     function testSelfExerciseRoundDownCase() public {
         uint256 _optionAmount = 3333333333333333333;
-        uint256 _expectedOptionAmount = 3333332000000000000;
+        uint256 _expectedOptionAmount = 3333333000000000000;
         vm.prank(Constants.EXERCISER);
         optionToken.write(_optionAmount);
         assertEq(optionToken.balanceOf(Constants.EXERCISER), _expectedOptionAmount, "BEFORE_OPTION_BALANCE");
@@ -278,7 +278,7 @@ contract $0_5PutOptionUnitTest is Test {
             optionAmount: _optionAmount,
             expectedOptionAmount: _expectedOptionAmount,
             // our contract lose quote token (1 WEI)
-            expectedQuoteAmount: ((1666666 * (Constants.FEE_PRECISION - Constants.FEE)) / Constants.FEE_PRECISION) + 1,
+            expectedQuoteAmount: ((3333333 * (Constants.FEE_PRECISION - Constants.FEE)) / Constants.FEE_PRECISION) + 1,
             // underlying and option decimals are same
             expectedUnderlyingAmount: _expectedOptionAmount
         });
@@ -298,7 +298,7 @@ contract $0_5PutOptionUnitTest is Test {
             user: Constants.EXERCISER,
             optionAmount: _optionAmount,
             expectedOptionAmount: _optionAmount,
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - Constants.FEE)) /
+            expectedQuoteAmount: (2000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - Constants.FEE)) /
                 Constants.FEE_PRECISION,
             // underlying and option decimals are same
             expectedUnderlyingAmount: 2000 * (10**underlyingToken.decimals())
@@ -312,11 +312,11 @@ contract $0_5PutOptionUnitTest is Test {
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.exercise(1);
 
-        uint256 _maximumAmountToRevert = 2 * 10**(18 - quoteToken.decimals()) - 1;
+        uint256 _maximumAmountToRevert = 10**(18 - quoteToken.decimals()) - 1;
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.exercise(_maximumAmountToRevert);
 
-        uint256 _minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
+        uint256 _minimumAmountToNotRevert = 10**(18 - quoteToken.decimals());
         optionToken.write(_minimumAmountToNotRevert);
         optionToken.exercise(_minimumAmountToNotRevert);
     }
@@ -366,7 +366,7 @@ contract $0_5PutOptionUnitTest is Test {
         _claim({
             user: Constants.WRITER1,
             expectedOptionAmount: _optionAmount1,
-            expectedQuoteAmount: 1000 * (10**quoteToken.decimals()),
+            expectedQuoteAmount: 2000 * (10**quoteToken.decimals()),
             // No one exercised, so underlying amount is 0
             expectedUnderlyingAmount: 0
         });
@@ -374,7 +374,7 @@ contract $0_5PutOptionUnitTest is Test {
         _claim({
             user: Constants.WRITER2,
             expectedOptionAmount: _optionAmount2,
-            expectedQuoteAmount: 1500 * (10**quoteToken.decimals()),
+            expectedQuoteAmount: 3000 * (10**quoteToken.decimals()),
             // No one exercised, so underlying amount is 0
             expectedUnderlyingAmount: 0
         });
@@ -403,8 +403,8 @@ contract $0_5PutOptionUnitTest is Test {
         _claim({
             user: Constants.WRITER1,
             expectedOptionAmount: _optionAmount1,
-            // 1000 * 1e6 * (4000 * 1e18 / (4000 * 1e18 + 1000 * 1e18))
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * 4) / 5,
+            // 2000 * 1e6 * (4000 * 1e18 / (4000 * 1e18 + 1000 * 1e18))
+            expectedQuoteAmount: (2000 * (10**quoteToken.decimals()) * 4) / 5,
             // (1000 * 1e6 / 0.5 * 1e-12) * (1000 * 1e18 / (4000 * 1e18 + 1000 * 1e18))
             expectedUnderlyingAmount: (2000 * (10**underlyingToken.decimals()) * 1) / 5
         });
@@ -433,8 +433,8 @@ contract $0_5PutOptionUnitTest is Test {
         _claim({
             user: Constants.WRITER1,
             expectedOptionAmount: _optionAmount1,
-            // 1000 * 1e6 * (3000 * 1e18 / (3000 * 1e18 + 2000 * 1e18))
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * 3) / 5,
+            // 2000 * 1e6 * (3000 * 1e18 / (3000 * 1e18 + 2000 * 1e18))
+            expectedQuoteAmount: (2000 * (10**quoteToken.decimals()) * 3) / 5,
             // (1000 * 1e6 / 0.5 * 1e-12) * (2000 * 1e18 / (3000 * 1e18 + 2000 * 1e18))
             expectedUnderlyingAmount: (2000 * (10**underlyingToken.decimals()) * 2) / 5
         });
@@ -454,7 +454,7 @@ contract $0_5PutOptionUnitTest is Test {
 
         testSelfExerciseNormalCase();
 
-        uint256 expectedFee = (1000 * (10**quoteToken.decimals()) * Constants.FEE) / Constants.FEE_PRECISION;
+        uint256 expectedFee = (2000 * (10**quoteToken.decimals()) * Constants.FEE) / Constants.FEE_PRECISION;
 
         vm.expectEmit(true, false, false, true);
         emit CollectFee(address(this), expectedFee);
