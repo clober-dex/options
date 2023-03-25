@@ -10,14 +10,12 @@ import "../../../mocks/MockQuoteToken.sol";
 import "../../../mocks/MockUnderlyingToken.sol";
 import "../../../../contracts/arbitrum/Arbitrum$0.5PutOption.sol";
 
-contract PutOptionsUnitTest is Test {
+contract $0_5PutOptionUnitTest is Test {
     event Write(address indexed writer, uint256 amount);
     event Cancel(address indexed writer, uint256 amount);
     event Exercise(address indexed recipient, uint256 amount);
     event Claim(address indexed recipient, uint256 amount);
     event CollectFee(address indexed recipient, uint256 amount);
-
-    uint256 constant STRIKE_PRICE = 5 * (10**17); // 0.5 USDC
 
     Arbitrum$0_5PutOption optionToken;
 
