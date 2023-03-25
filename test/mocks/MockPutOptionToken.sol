@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../../../../contracts/PutOptionToken.sol";
+import "../../contracts/PutOptionToken.sol";
 
 contract MockPutOptionToken is PutOptionToken {
     constructor(
