@@ -13,6 +13,7 @@ import 'hardhat-gas-reporter'
 import 'hardhat-contract-sizer'
 import 'hardhat-abi-exporter'
 import 'solidity-coverage'
+import './task/docs'
 
 dotenv.config()
 
