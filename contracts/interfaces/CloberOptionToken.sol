@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: -
-// License: https://license.clober.io/LICENSE.pdf
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 pragma solidity ^0.8.0;
 
@@ -61,10 +60,10 @@ interface CloberOptionToken {
 
     /**
      * @notice Returns the collateral balance for the given address.
-     * @param The address to check the balance for.
+     * @param user The address to check the balance for.
      * @return The collateral balance for the given address.
      */
-    function collateral(address) external view returns (uint256);
+    function collateral(address user) external view returns (uint256);
 
     /**
      * @notice Returns the strike price of the option.
