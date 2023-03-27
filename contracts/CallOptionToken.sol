@@ -65,46 +65,46 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         return address(_quoteToken);
     }
 
-    function write(uint256 amount) external nonReentrant {
+    function write(uint256 optionAmount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
-        require(amount > 0, "INVALID_AMOUNT");
+        require(optionAmount > 0, "INVALID_AMOUNT");
 
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
-        collateral[msg.sender] += amount;
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), optionAmount);
+        collateral[msg.sender] += optionAmount;
 
-        _mint(msg.sender, amount);
+        _mint(msg.sender, optionAmount);
 
-        emit Write(msg.sender, amount);
+        emit Write(msg.sender, optionAmount);
     }
 
-    function cancel(uint256 amount) external nonReentrant {
+    function cancel(uint256 optionAmount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
-        require(amount > 0, "INVALID_AMOUNT");
+        require(optionAmount > 0, "INVALID_AMOUNT");
 
-        collateral[msg.sender] -= amount;
-        _burn(msg.sender, amount);
+        collateral[msg.sender] -= optionAmount;
+        _burn(msg.sender, optionAmount);
 
-        _underlyingToken.transfer(msg.sender, amount);
+        _underlyingToken.transfer(msg.sender, optionAmount);
 
-        emit Cancel(msg.sender, amount);
+        emit Cancel(msg.sender, optionAmount);
     }
 
-    function exercise(uint256 amount) external nonReentrant {
+    function exercise(uint256 optionAmount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
-        require(amount > 0, "INVALID_AMOUNT");
+        require(optionAmount > 0, "INVALID_AMOUNT");
 
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
-        _burn(msg.sender, amount);
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), optionAmount);
+        _burn(msg.sender, optionAmount);
 
-        uint256 quoteAmount = (amount * strikePrice) / _quotePrecisionComplement;
+        uint256 quoteAmount = (optionAmount * strikePrice) / _quotePrecisionComplement;
         uint256 feeAmount = (quoteAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
 
         _quoteToken.transfer(msg.sender, quoteAmount - feeAmount);
 
-        exercisedAmount += amount;
+        exercisedAmount += optionAmount;
 
-        emit Exercise(msg.sender, amount);
+        emit Exercise(msg.sender, optionAmount);
     }
 
     function _claim(address writer) internal nonReentrant {
