@@ -103,8 +103,8 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         require(optionAmount > 0, "INVALID_AMOUNT");
 
         // TODO: create decimal converter when underlyingToken and quoteToken have different decimals
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
-        _burn(msg.sender, amount);
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), optionAmount);
+        _burn(msg.sender, optionAmount);
 
         uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
