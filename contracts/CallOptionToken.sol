@@ -136,8 +136,8 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
 
     function collectFee() external onlyOwner nonReentrant {
         _quoteToken.transfer(msg.sender, exerciseFeeBalance);
-        exerciseFeeBalance = 0;
 
         emit CollectFee(msg.sender, exerciseFeeBalance);
+        exerciseFeeBalance = 0;
     }
 }
