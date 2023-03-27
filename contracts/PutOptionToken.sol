@@ -102,8 +102,9 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         optionAmount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
         require(optionAmount > 0, "INVALID_AMOUNT");
 
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), optionAmount);
-        _burn(msg.sender, optionAmount);
+        // TODO: create decimal converter when underlyingToken and quoteToken have different decimals
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
+        _burn(msg.sender, amount);
 
         uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
@@ -143,8 +144,8 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
 
     function collectFee() external onlyOwner nonReentrant {
         _quoteToken.transfer(msg.sender, exerciseFeeBalance);
-        exerciseFeeBalance = 0;
 
         emit CollectFee(msg.sender, exerciseFeeBalance);
+        exerciseFeeBalance = 0;
     }
 }
