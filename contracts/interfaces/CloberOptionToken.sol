@@ -97,21 +97,21 @@ interface CloberOptionToken {
 
     /**
      * @notice Allows an address to write options.
-     * @param amount The amount of options to write.
+     * @param optionAmount The amount of options to write.
      */
-    function write(uint256 amount) external;
+    function write(uint256 optionAmount) external;
 
     /**
      * @notice Allows an option writer to cancel options before expiration.
-     * @param amount The amount of options to cancel.
+     * @param optionAmount The amount of options to cancel.
      */
-    function cancel(uint256 amount) external;
+    function cancel(uint256 optionAmount) external;
 
     /**
      * @notice Allows an option holder to exercise options before expiration.
-     * @param amount The amount of options to exercise.
+     * @param optionAmount The amount of options to exercise.
      */
-    function exercise(uint256 amount) external;
+    function exercise(uint256 optionAmount) external;
 
     /**
      * @notice Allows an option holder to claim the underlying asset after exercise.

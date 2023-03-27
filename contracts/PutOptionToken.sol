@@ -65,54 +65,54 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         return address(_quoteToken);
     }
 
-    function write(uint256 amount) external nonReentrant {
+    function write(uint256 optionAmount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        uint256 collateralAmount = (amount * strikePrice) / _quotePrecisionComplement;
-        amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
-        require(amount > 0, "INVALID_AMOUNT");
+        uint256 collateralAmount = (optionAmount * strikePrice) / _quotePrecisionComplement;
+        optionAmount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
+        require(optionAmount > 0, "INVALID_AMOUNT");
 
         _quoteToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
         collateral[msg.sender] += collateralAmount;
 
-        _mint(msg.sender, amount);
+        _mint(msg.sender, optionAmount);
 
-        emit Write(msg.sender, amount);
+        emit Write(msg.sender, optionAmount);
     }
 
-    function cancel(uint256 amount) external nonReentrant {
+    function cancel(uint256 optionAmount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        uint256 collateralAmount = (amount * strikePrice) / _quotePrecisionComplement;
-        amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
-        require(amount > 0, "INVALID_AMOUNT");
+        uint256 collateralAmount = (optionAmount * strikePrice) / _quotePrecisionComplement;
+        optionAmount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
+        require(optionAmount > 0, "INVALID_AMOUNT");
 
         collateral[msg.sender] -= collateralAmount;
-        _burn(msg.sender, amount);
+        _burn(msg.sender, optionAmount);
 
         _quoteToken.transfer(msg.sender, collateralAmount);
 
-        emit Cancel(msg.sender, amount);
+        emit Cancel(msg.sender, optionAmount);
     }
 
-    function exercise(uint256 amount) external nonReentrant {
+    function exercise(uint256 optionAmount) external nonReentrant {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
 
-        uint256 collateralAmount = (amount * strikePrice) / _quotePrecisionComplement;
-        amount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
-        require(amount > 0, "INVALID_AMOUNT");
+        uint256 collateralAmount = (optionAmount * strikePrice) / _quotePrecisionComplement;
+        optionAmount = (collateralAmount * _quotePrecisionComplement) / strikePrice;
+        require(optionAmount > 0, "INVALID_AMOUNT");
 
-        _underlyingToken.safeTransferFrom(msg.sender, address(this), amount);
-        _burn(msg.sender, amount);
+        _underlyingToken.safeTransferFrom(msg.sender, address(this), optionAmount);
+        _burn(msg.sender, optionAmount);
 
         uint256 feeAmount = (collateralAmount * exerciseFee) / _FEE_PRECISION;
         exerciseFeeBalance += feeAmount;
 
         _quoteToken.transfer(msg.sender, collateralAmount - feeAmount);
 
-        exercisedAmount += amount;
+        exercisedAmount += optionAmount;
 
-        emit Exercise(msg.sender, amount);
+        emit Exercise(msg.sender, optionAmount);
     }
 
     function claim() external {
