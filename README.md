@@ -1,8 +1,8 @@
 # Clober option contracts
 
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.clober.io/)
-[![codecov](https://codecov.io/gh/clober-dex/arbitrum-put-options/branch/dev/graph/badge.svg?token=QNSGDYQOL7)](https://codecov.io/gh/clober-dex/arbitrum-put-options)
-[![CI status](https://github.com/clober-dex/arbitrum-put-options/actions/workflows/ci.yaml/badge.svg)](https://github.com/clober-dex/arbitrum-put-options/actions/workflows/ci.yaml)
+[![codecov](https://codecov.io/gh/clober-dex/arbitrum-options/branch/dev/graph/badge.svg?token=QNSGDYQOL7)](https://codecov.io/gh/clober-dex/arbitrum-options)
+[![CI status](https://github.com/clober-dex/arbitrum-options/actions/workflows/ci.yaml/badge.svg)](https://github.com/clober-dex/arbitrum-options/actions/workflows/ci.yaml)
 [![Discord](https://img.shields.io/static/v1?logo=discord&label=discord&message=Join&color=blue)](https://discord.gg/clober)
 [![Twitter](https://img.shields.io/static/v1?logo=twitter&label=twitter&message=Follow&color=blue)](https://twitter.com/CloberDEX)
 
@@ -43,7 +43,7 @@ To install dependencies and compile contracts:
 ### Installing From Source
 
 ```bash
-git clone https://github.com/clober-dex/arbitrum-put-options && cd arbitrum-put-options
+git clone https://github.com/clober-dex/arbitrum-options && cd arbitrum-options
 npm install
 ```
 
