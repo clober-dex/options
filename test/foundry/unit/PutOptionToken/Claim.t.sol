@@ -21,7 +21,10 @@ contract PutOptionClaimUnitTest is Test {
     MockUnderlyingToken underlyingToken;
 
     function setUp() public {
-        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run();
+        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
+            1325324 * 10**15, // $132.5324
+            100 // 0.01%
+        );
     }
 
     function _claim(

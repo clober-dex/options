@@ -15,13 +15,18 @@ import "./SetUp.sol";
 contract PutOptionCollectFeeUnitTest is Test {
     event CollectFee(address indexed recipient, uint256 amount);
 
+    uint256 constant EXERCISE_FEE = 3000; // 0.3%
+
     PutOptionToken optionToken;
 
     MockQuoteToken quoteToken;
     MockUnderlyingToken underlyingToken;
 
     function setUp() public {
-        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run();
+        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
+            2423142 * 10**15, // $242.3428
+            EXERCISE_FEE
+        );
     }
 
     function testCollectFee() public {
@@ -35,7 +40,7 @@ contract PutOptionCollectFeeUnitTest is Test {
         vm.prank(Constants.EXERCISER);
         optionToken.exercise(_optionAmount);
 
-        uint256 expectedFee = (1000 * (10**quoteToken.decimals()) * Constants.FEE) / Constants.FEE_PRECISION;
+        uint256 expectedFee = (1000 * (10**quoteToken.decimals()) * EXERCISE_FEE) / Constants.FEE_PRECISION;
 
         vm.expectEmit(true, false, false, true);
         emit CollectFee(address(this), expectedFee);

@@ -21,7 +21,10 @@ contract PutOptionWriteUnitTest is Test {
     MockUnderlyingToken underlyingToken;
 
     function setUp() public {
-        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run();
+        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
+            23 * 10**12, // $0.000023
+            10000 // 1%
+        );
     }
 
     function _write(

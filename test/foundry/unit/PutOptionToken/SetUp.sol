@@ -11,7 +11,7 @@ import "../../../mocks/MockPutOptionToken.sol";
 import "../Constants.sol";
 
 contract PutOptionTokenUnitTestSetUp is Test {
-    function run()
+    function run(uint256 strikePrice, uint256 exerciseFee)
         external
         returns (
             MockQuoteToken quoteToken,
@@ -35,9 +35,9 @@ contract PutOptionTokenUnitTestSetUp is Test {
         optionToken = new MockPutOptionToken(
             address(underlyingToken),
             address(quoteToken),
-            Constants.STRIKE_PRICE,
+            strikePrice,
             Constants.EXPIRES_AT,
-            Constants.FEE
+            exerciseFee
         );
 
         // approve the option token to spend the quote tokens

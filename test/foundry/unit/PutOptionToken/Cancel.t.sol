@@ -21,7 +21,10 @@ contract PutOptionCancelUnitTest is Test {
     MockUnderlyingToken underlyingToken;
 
     function setUp() public {
-        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run();
+        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
+            3428 * 10**15, // $0.3428
+            1000 // 0.1%
+        );
     }
 
     function _cancel(

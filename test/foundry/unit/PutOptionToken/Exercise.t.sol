@@ -15,13 +15,18 @@ import "./SetUp.sol";
 contract PutOptionExerciseUnitTest is Test {
     event Exercise(address indexed recipient, uint256 amount);
 
+    uint256 constant EXERCISE_FEE = 2500; // 0.25%
+
     PutOptionToken optionToken;
 
     MockQuoteToken quoteToken;
     MockUnderlyingToken underlyingToken;
 
     function setUp() public {
-        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run();
+        (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
+            23200 * 10**18, // $23200
+            EXERCISE_FEE
+        );
     }
 
     function _exercise(
@@ -59,7 +64,7 @@ contract PutOptionExerciseUnitTest is Test {
         _exercise({
             user: Constants.EXERCISER,
             optionAmount: _optionAmount,
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - Constants.FEE)) /
+            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - EXERCISE_FEE)) /
                 Constants.FEE_PRECISION,
             // underlying and option decimals are same
             expectedUnderlyingAmount: 2000 * (10**underlyingToken.decimals())
@@ -95,7 +100,7 @@ contract PutOptionExerciseUnitTest is Test {
         _exercise({
             user: Constants.EXERCISER,
             optionAmount: _optionAmount,
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - Constants.FEE)) /
+            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - EXERCISE_FEE)) /
                 Constants.FEE_PRECISION,
             // underlying and option decimals are same
             expectedUnderlyingAmount: 2000 * (10**underlyingToken.decimals())
