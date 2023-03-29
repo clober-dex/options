@@ -7,10 +7,10 @@ import "../../contracts/PutOptionToken.sol";
 
 contract MockPutOptionToken is PutOptionToken {
     constructor(
-        address quoteToken,
         address underlyingToken,
+        address quoteToken,
         uint256 strikePrice,
         uint256 expiresAt,
         uint256 exerciseFee
-    ) PutOptionToken(quoteToken, underlyingToken, strikePrice, expiresAt, exerciseFee, "Mock Put Option", "M-P") {}
+    ) PutOptionToken(underlyingToken, quoteToken, strikePrice, expiresAt, exerciseFee, "Mock Put Option", "M-P") {}
 }

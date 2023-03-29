@@ -7,10 +7,10 @@ import "../../contracts/CallOptionToken.sol";
 
 contract MockCallOptionToken is CallOptionToken {
     constructor(
-        address quoteToken,
         address underlyingToken,
+        address quoteToken,
         uint256 strikePrice,
         uint256 expiresAt,
         uint256 exerciseFee
-    ) CallOptionToken(quoteToken, underlyingToken, strikePrice, expiresAt, exerciseFee, "Mock Call Option", "M-C") {}
+    ) CallOptionToken(underlyingToken, quoteToken, strikePrice, expiresAt, exerciseFee, "Mock Call Option", "M-C") {}
 }
