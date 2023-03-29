@@ -3,14 +3,14 @@
 
 pragma solidity ^0.8.0;
 
-import "../../contracts/PutOptionToken.sol";
+import "../../contracts/CallOptionToken.sol";
 
-contract MockPutOptionToken is PutOptionToken {
+contract MockCallOptionToken is CallOptionToken {
     constructor(
         address underlyingToken,
         address quoteToken,
         uint256 strikePrice,
         uint256 expiresAt,
         uint256 exerciseFee
-    ) PutOptionToken(underlyingToken, quoteToken, strikePrice, expiresAt, exerciseFee, "Mock Put Option", "M-P") {}
+    ) CallOptionToken(underlyingToken, quoteToken, strikePrice, expiresAt, exerciseFee, "Mock Call Option", "M-C") {}
 }
