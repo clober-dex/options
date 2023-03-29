@@ -1,4 +1,4 @@
-name: Clober DEX CI
+name: Tests for options contracts
 on:
   pull_request:
     branches:
