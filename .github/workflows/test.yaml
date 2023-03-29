@@ -5,11 +5,13 @@ on:
       - master
     paths:
       - '**/*.sol'
+      - 'test/**/*.ts'
   push:
     branches:
       - master
     paths:
       - '**/*.sol'
+      - 'test/**/*.ts'
 
 jobs:
   foundry-tests:
