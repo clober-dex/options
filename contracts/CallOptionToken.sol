@@ -127,7 +127,7 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
 
         uint256 collateralAmount = collateral[writer];
-        uint256 amount = (collateralAmount * strikePrice) / _quotePrecisionComplement / _PRICE_PRECISION) / ;
+        uint256 amount = (collateralAmount * strikePrice) / _quotePrecisionComplement / _PRICE_PRECISION;
 
         uint256 claimableQuoteAmount = (amount * exercisedAmount) / totalWrittenAmount;
         uint256 claimableUnderlyingAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
