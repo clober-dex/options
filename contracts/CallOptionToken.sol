@@ -121,7 +121,23 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         emit Exercise(msg.sender, optionAmount);
     }
 
-    function _claim(address writer) internal nonReentrant {}
+    function _claim(address writer) internal nonReentrant {
+        require(block.timestamp > expiresAt, "OPTION_NOT_EXPIRED");
+        uint256 expiredAmount = totalSupply();
+        uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
+
+        uint256 collateralAmount = collateral[writer];
+        uint256 amount = (collateralAmount * strikePrice) / _quotePrecisionComplement / _PRICE_PRECISION) / ;
+
+        uint256 claimableQuoteAmount = (amount * exercisedAmount) / totalWrittenAmount;
+        uint256 claimableUnderlyingAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
+
+        collateral[writer] = 0;
+        _quoteToken.transfer(writer, claimableQuoteAmount);
+        _underlyingToken.transfer(writer, claimableUnderlyingAmount);
+
+        emit Claim(writer, amount);
+    }
 
     function claim() external {
         _claim(msg.sender);
