@@ -1,11 +1,17 @@
-name: Hardhat CI
+name: Tests for options contracts
 on:
   pull_request:
     branches:
       - master
+    paths:
+      - '**/*.sol'
+      - 'test/**/*.ts'
   push:
     branches:
       - master
+    paths:
+      - '**/*.sol'
+      - 'test/**/*.ts'
 
 jobs:
   foundry-tests:
