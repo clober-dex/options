@@ -19,17 +19,19 @@ contract PutOptionTokenUnitTestSetUp is Test {
             MockPutOptionToken optionToken
         )
     {
+        address initiator = msg.sender;
+        vm.startPrank(initiator);
         quoteToken = new MockQuoteToken();
         underlyingToken = new MockUnderlyingToken();
 
         // mint some tokens to the writers
-        quoteToken.mint(address(this), 10000000 * (10**quoteToken.decimals()));
+        quoteToken.mint(initiator, 10000000 * (10**quoteToken.decimals()));
         quoteToken.mint(Constants.WRITER1, 10000000 * (10**quoteToken.decimals()));
         quoteToken.mint(Constants.WRITER2, 10000000 * (10**quoteToken.decimals()));
         quoteToken.mint(Constants.WRITER3, 10000000 * (10**quoteToken.decimals()));
         quoteToken.mint(Constants.EXERCISER, 10000000 * (10**quoteToken.decimals()));
 
-        underlyingToken.mint(address(this), 10000000 * (10**underlyingToken.decimals()));
+        underlyingToken.mint(initiator, 10000000 * (10**underlyingToken.decimals()));
         underlyingToken.mint(Constants.EXERCISER, 10000000 * (10**underlyingToken.decimals()));
 
         optionToken = new MockPutOptionToken(
@@ -39,9 +41,10 @@ contract PutOptionTokenUnitTestSetUp is Test {
             Constants.EXPIRES_AT,
             exerciseFee
         );
+        vm.stopPrank();
 
         // approve the option token to spend the quote tokens
-        vm.prank(address(this));
+        vm.prank(initiator);
         quoteToken.approve(address(optionToken), type(uint256).max);
         vm.prank(Constants.WRITER1);
         quoteToken.approve(address(optionToken), type(uint256).max);
@@ -53,7 +56,7 @@ contract PutOptionTokenUnitTestSetUp is Test {
         quoteToken.approve(address(optionToken), type(uint256).max);
 
         // approve the option token to spend the underlying tokens
-        vm.prank(address(this));
+        vm.prank(initiator);
         underlyingToken.approve(address(optionToken), type(uint256).max);
         vm.prank(Constants.EXERCISER);
         underlyingToken.approve(address(optionToken), type(uint256).max);
