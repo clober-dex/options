@@ -15,6 +15,7 @@ import "./SetUp.sol";
 contract CallOptionExerciseUnitTest is Test {
     event Exercise(address indexed recipient, uint256 amount);
 
+    uint256 constant STRIKE_PRICE = 23200 * 10**18; // $23200
     uint256 constant EXERCISE_FEE = 2500; // 0.25%
 
     CallOptionToken optionToken;
@@ -24,7 +25,7 @@ contract CallOptionExerciseUnitTest is Test {
 
     function setUp() public {
         (quoteToken, underlyingToken, optionToken) = (new CallOptionTokenUnitTestSetUp()).run(
-            23200 * 10**18, // $23200
+            STRIKE_PRICE,
             EXERCISE_FEE
         );
     }
@@ -40,8 +41,8 @@ contract CallOptionExerciseUnitTest is Test {
         uint256 beforeUnderlyingBalance = underlyingToken.balanceOf(user);
         uint256 beforeExerciseBalance = optionToken.exercisedAmount();
 
-        //        vm.expectEmit(true, false, false, true);
-        //        emit Exercise(user, optionAmount);
+        vm.expectEmit(true, false, false, true);
+        emit Exercise(user, optionAmount);
         vm.prank(user);
         optionToken.exercise(optionAmount);
 

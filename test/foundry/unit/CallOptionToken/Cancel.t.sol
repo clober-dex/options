@@ -15,6 +15,9 @@ import "./SetUp.sol";
 contract CallOptionCancelUnitTest is Test {
     event Cancel(address indexed writer, uint256 amount);
 
+    uint256 constant STRIKE_PRICE = 1458 * 10**12; // $0.001458
+    uint256 constant EXERCISE_FEE = 1000;
+
     CallOptionToken optionToken;
 
     MockQuoteToken quoteToken;
@@ -22,8 +25,8 @@ contract CallOptionCancelUnitTest is Test {
 
     function setUp() public {
         (quoteToken, underlyingToken, optionToken) = (new CallOptionTokenUnitTestSetUp()).run(
-            1458 * 10**12, // $0.001458
-            1000 // 0.1%
+            STRIKE_PRICE,
+            EXERCISE_FEE
         );
     }
 
