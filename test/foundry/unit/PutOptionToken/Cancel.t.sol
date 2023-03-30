@@ -15,6 +15,9 @@ import "./SetUp.sol";
 contract PutOptionCancelUnitTest is Test {
     event Cancel(address indexed writer, uint256 amount);
 
+    uint256 constant STRIKE_PRICE = 3428 * 10**14; // $0.3428
+    uint256 constant EXERCISE_FEE = 1000; // 0.1%
+
     PutOptionToken optionToken;
 
     MockQuoteToken quoteToken;
@@ -22,8 +25,8 @@ contract PutOptionCancelUnitTest is Test {
 
     function setUp() public {
         (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
-            3428 * 10**15, // $0.3428
-            1000 // 0.1%
+            STRIKE_PRICE,
+            EXERCISE_FEE
         );
     }
 
@@ -51,34 +54,34 @@ contract PutOptionCancelUnitTest is Test {
     }
 
     function testCancelNormalCase() public {
-        uint256 _optionAmount = 2000 * (10**optionToken.decimals());
+        uint256 optionAmount = 2000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER1);
-        optionToken.write(_optionAmount);
-        assertEq(optionToken.balanceOf(Constants.WRITER1), _optionAmount, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount);
+        assertEq(optionToken.balanceOf(Constants.WRITER1), optionAmount, "BEFORE_OPTION_BALANCE");
 
         _cancel({
             user: Constants.WRITER1,
             optionAmount: 1000 * (10**optionToken.decimals()),
-            expectedQuoteAmount: 500 * (10**quoteToken.decimals())
+            expectedQuoteAmount: (STRIKE_PRICE * 1000 * (10**quoteToken.decimals())) / Constants.PRICE_PRECISION
         });
 
         _cancel({
             user: Constants.WRITER1,
             optionAmount: 1000 * (10**optionToken.decimals()),
-            expectedQuoteAmount: 500 * (10**quoteToken.decimals())
+            expectedQuoteAmount: (STRIKE_PRICE * 1000 * (10**quoteToken.decimals())) / Constants.PRICE_PRECISION
         });
         assertEq(optionToken.balanceOf(Constants.WRITER1), 0, "BEFORE_AFTER_BALANCE");
     }
 
     function testCancelRoundDownCase() public {
-        uint256 _optionAmount = 3333333333333333333;
+        uint256 optionAmount = 333333333333333;
         vm.prank(Constants.WRITER1);
-        optionToken.write(_optionAmount);
-        assertEq(optionToken.balanceOf(Constants.WRITER1), _optionAmount, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount);
+        assertEq(optionToken.balanceOf(Constants.WRITER1), optionAmount, "BEFORE_OPTION_BALANCE");
 
-        _cancel({user: Constants.WRITER1, optionAmount: 1666666000000000000, expectedQuoteAmount: 833333});
+        _cancel({user: Constants.WRITER1, optionAmount: 166666600000000, expectedQuoteAmount: 571333});
 
-        _cancel({user: Constants.WRITER1, optionAmount: 1666667333333333333, expectedQuoteAmount: 833333});
+        _cancel({user: Constants.WRITER1, optionAmount: 166666733333333, expectedQuoteAmount: 571333});
         assertEq(optionToken.balanceOf(Constants.WRITER1), 0, "BEFORE_AFTER_BALANCE");
     }
 
@@ -89,19 +92,19 @@ contract PutOptionCancelUnitTest is Test {
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.cancel(1);
 
-        uint256 _maximumAmountToRevert = 2 * 10**(18 - quoteToken.decimals()) - 1;
+        uint256 maximumAmountToRevert = 291715285; // (Constants.PRICE_PRECISION * 10**(optionToken.decimals() - quoteToken.decimals())) / STRIKE_PRICE
         vm.expectRevert("INVALID_AMOUNT");
-        optionToken.cancel(_maximumAmountToRevert);
+        optionToken.cancel(maximumAmountToRevert);
 
-        uint256 _minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
-        optionToken.write(_minimumAmountToNotRevert);
-        optionToken.cancel(_minimumAmountToNotRevert);
+        uint256 minimumAmountToNotRevert = maximumAmountToRevert + 1;
+        optionToken.write(minimumAmountToNotRevert);
+        optionToken.cancel(minimumAmountToNotRevert);
     }
 
     function testCancelOptionExpired() public {
         vm.warp(1 days + 1);
-        uint256 _amount = 1000 * (10**optionToken.decimals());
+        uint256 amount = 1000 * (10**optionToken.decimals());
         vm.expectRevert("OPTION_EXPIRED");
-        optionToken.cancel(_amount);
+        optionToken.cancel(amount);
     }
 }

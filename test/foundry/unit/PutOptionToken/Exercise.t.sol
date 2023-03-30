@@ -15,6 +15,7 @@ import "./SetUp.sol";
 contract PutOptionExerciseUnitTest is Test {
     event Exercise(address indexed recipient, uint256 amount);
 
+    uint256 constant STRIKE_PRICE = 232005 * 10**17; // $23200.5
     uint256 constant EXERCISE_FEE = 2500; // 0.25%
 
     PutOptionToken optionToken;
@@ -24,7 +25,7 @@ contract PutOptionExerciseUnitTest is Test {
 
     function setUp() public {
         (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
-            23200 * 10**18, // $23200
+            STRIKE_PRICE,
             EXERCISE_FEE
         );
     }
@@ -56,54 +57,53 @@ contract PutOptionExerciseUnitTest is Test {
     }
 
     function testSelfExerciseNormalCase() public {
-        uint256 _optionAmount = 2000 * (10**optionToken.decimals());
+        uint256 optionAmount = 1 * (10**optionToken.decimals());
         vm.prank(Constants.EXERCISER);
-        optionToken.write(_optionAmount);
-        assertEq(optionToken.balanceOf(Constants.EXERCISER), _optionAmount, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount);
+        assertEq(optionToken.balanceOf(Constants.EXERCISER), optionAmount, "BEFORE_OPTION_BALANCE");
 
         _exercise({
             user: Constants.EXERCISER,
-            optionAmount: _optionAmount,
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - EXERCISE_FEE)) /
-                Constants.FEE_PRECISION,
-            // underlying and option decimals are same
-            expectedUnderlyingAmount: 2000 * (10**underlyingToken.decimals())
+            optionAmount: optionAmount,
+            expectedQuoteAmount: (232005 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - EXERCISE_FEE)) /
+                Constants.FEE_PRECISION /
+                10,
+            expectedUnderlyingAmount: 1 * (10**underlyingToken.decimals())
         });
     }
 
     function testSelfExerciseRoundDownCase() public {
-        uint256 _optionAmount = 3333333333333333333;
+        uint256 optionAmount = (1 * (10**optionToken.decimals())) / 3;
         vm.prank(Constants.EXERCISER);
-        optionToken.write(_optionAmount);
-        assertEq(optionToken.balanceOf(Constants.EXERCISER), _optionAmount, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount);
+        assertEq(optionToken.balanceOf(Constants.EXERCISER), optionAmount, "BEFORE_OPTION_BALANCE");
 
         _exercise({
             user: Constants.EXERCISER,
-            optionAmount: _optionAmount,
-            // our contract lose quote token (1 WEI)
-            expectedQuoteAmount: 1666666 - 1667,
-            // underlying and option decimals are same
-            expectedUnderlyingAmount: _optionAmount
+            optionAmount: optionAmount,
+            // (optionAmount * strikePrice) - fee
+            expectedQuoteAmount: 7733499999 - 19333750,
+            expectedUnderlyingAmount: (1 * (10**underlyingToken.decimals())) / 3
         });
     }
 
     function testOtherUserExercise() public {
-        uint256 _optionAmount = 2000 * (10**optionToken.decimals());
+        uint256 optionAmount = 1 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER1);
-        optionToken.write(_optionAmount);
-        assertEq(optionToken.balanceOf(Constants.WRITER1), _optionAmount, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount);
+        assertEq(optionToken.balanceOf(Constants.WRITER1), optionAmount, "BEFORE_OPTION_BALANCE");
 
         // transfer option token to exerciser
         vm.prank(Constants.WRITER1);
-        optionToken.transfer(Constants.EXERCISER, _optionAmount);
+        optionToken.transfer(Constants.EXERCISER, optionAmount);
 
         _exercise({
             user: Constants.EXERCISER,
-            optionAmount: _optionAmount,
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - EXERCISE_FEE)) /
-                Constants.FEE_PRECISION,
-            // underlying and option decimals are same
-            expectedUnderlyingAmount: 2000 * (10**underlyingToken.decimals())
+            optionAmount: optionAmount,
+            expectedQuoteAmount: (232005 * (10**quoteToken.decimals()) * (Constants.FEE_PRECISION - EXERCISE_FEE)) /
+                Constants.FEE_PRECISION /
+                10,
+            expectedUnderlyingAmount: 1 * (10**underlyingToken.decimals())
         });
     }
 
@@ -114,19 +114,19 @@ contract PutOptionExerciseUnitTest is Test {
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.exercise(1);
 
-        uint256 _maximumAmountToRevert = 2 * 10**(18 - quoteToken.decimals()) - 1;
+        uint256 maximumAmountToRevert = 4310; // (Constants.PRICE_PRECISION * 10**(optionToken.decimals() - quoteToken.decimals())) / STRIKE_PRICE
         vm.expectRevert("INVALID_AMOUNT");
-        optionToken.exercise(_maximumAmountToRevert);
+        optionToken.exercise(maximumAmountToRevert);
 
-        uint256 _minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
-        optionToken.write(_minimumAmountToNotRevert);
-        optionToken.exercise(_minimumAmountToNotRevert);
+        uint256 minimumAmountToNotRevert = maximumAmountToRevert + 1;
+        optionToken.write(minimumAmountToNotRevert);
+        optionToken.exercise(minimumAmountToNotRevert);
     }
 
     function testExerciseOptionExpired() public {
         vm.warp(1 days + 1);
-        uint256 _amount = 1000 * (10**optionToken.decimals());
+        uint256 amount = 1000 * (10**optionToken.decimals());
         vm.expectRevert("OPTION_EXPIRED");
-        optionToken.exercise(_amount);
+        optionToken.exercise(amount);
     }
 }

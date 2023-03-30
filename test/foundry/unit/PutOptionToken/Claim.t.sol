@@ -15,6 +15,9 @@ import "./SetUp.sol";
 contract PutOptionClaimUnitTest is Test {
     event Claim(address indexed recipient, uint256 amount);
 
+    uint256 constant STRIKE_PRICE = 1325324 * 10**15; // $1325.324
+    uint256 constant EXERCISE_FEE = 100; // 0.01%
+
     PutOptionToken optionToken;
 
     MockQuoteToken quoteToken;
@@ -22,8 +25,8 @@ contract PutOptionClaimUnitTest is Test {
 
     function setUp() public {
         (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
-            1325324 * 10**15, // $132.5324
-            100 // 0.01%
+            STRIKE_PRICE,
+            EXERCISE_FEE
         );
     }
 
@@ -51,90 +54,91 @@ contract PutOptionClaimUnitTest is Test {
     }
 
     function testClaimNoOneExercised() public {
-        uint256 _optionAmount1 = 2000 * (10**optionToken.decimals());
+        uint256 optionAmount1 = 2000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER1);
-        optionToken.write(_optionAmount1);
-        assertEq(optionToken.balanceOf(Constants.WRITER1), _optionAmount1, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount1);
+        assertEq(optionToken.balanceOf(Constants.WRITER1), optionAmount1, "BEFORE_OPTION_BALANCE");
 
-        uint256 _optionAmount2 = 3000 * (10**optionToken.decimals());
+        uint256 optionAmount2 = 3000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER2);
-        optionToken.write(_optionAmount2);
-        assertEq(optionToken.balanceOf(Constants.WRITER2), _optionAmount2, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount2);
+        assertEq(optionToken.balanceOf(Constants.WRITER2), optionAmount2, "BEFORE_OPTION_BALANCE");
 
         vm.warp(1 days + 1);
         _claim({
             user: Constants.WRITER1,
-            optionAmount: _optionAmount1,
-            expectedQuoteAmount: 1000 * (10**quoteToken.decimals()),
+            optionAmount: optionAmount1,
+            expectedQuoteAmount: (STRIKE_PRICE * 2000 * (10**quoteToken.decimals())) / Constants.PRICE_PRECISION,
             // No one exercised, so underlying amount is 0
             expectedUnderlyingAmount: 0
         });
 
         _claim({
             user: Constants.WRITER2,
-            optionAmount: _optionAmount2,
-            expectedQuoteAmount: 1500 * (10**quoteToken.decimals()),
+            optionAmount: optionAmount2,
+            expectedQuoteAmount: (STRIKE_PRICE * 3000 * (10**quoteToken.decimals())) / Constants.PRICE_PRECISION,
             // No one exercised, so underlying amount is 0
             expectedUnderlyingAmount: 0
         });
     }
 
     function testClaimHalfExercised() public {
-        uint256 _optionAmount1 = 2000 * (10**optionToken.decimals());
+        uint256 optionAmount1 = 2000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER1);
-        optionToken.write(_optionAmount1);
-        assertEq(optionToken.balanceOf(Constants.WRITER1), _optionAmount1, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount1);
+        assertEq(optionToken.balanceOf(Constants.WRITER1), optionAmount1, "BEFORE_OPTION_BALANCE");
 
-        uint256 _optionAmount2 = 3000 * (10**optionToken.decimals());
+        uint256 optionAmount2 = 3000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER2);
-        optionToken.write(_optionAmount2);
-        assertEq(optionToken.balanceOf(Constants.WRITER2), _optionAmount2, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount2);
+        assertEq(optionToken.balanceOf(Constants.WRITER2), optionAmount2, "BEFORE_OPTION_BALANCE");
 
         // transfer option token to exerciser
         vm.prank(Constants.WRITER1);
-        optionToken.transfer(Constants.EXERCISER, _optionAmount1);
+        optionToken.transfer(Constants.EXERCISER, optionAmount1);
 
         // half exercised
         vm.prank(Constants.EXERCISER);
-        optionToken.exercise(_optionAmount1 / 2);
+        optionToken.exercise(optionAmount1 / 2);
 
         vm.warp(1 days + 1);
         _claim({
             user: Constants.WRITER1,
-            optionAmount: _optionAmount1,
-            // 1000 * 1e6 * (4000 * 1e18 / (4000 * 1e18 + 1000 * 1e18))
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * 4) / 5,
-            // (1000 * 1e6 / 0.5 * 1e-12) * (1000 * 1e18 / (4000 * 1e18 + 1000 * 1e18))
+            optionAmount: optionAmount1,
+            // STRIKE_PRICE * (optionAmount1 + optionAmount2 - optionAmount1 / 2) * (optionAmount1 / (optionAmount1 + optionAmount2))
+            expectedQuoteAmount: (((STRIKE_PRICE * (5000 - 1000) * 2) / 5) * (10**quoteToken.decimals())) /
+                Constants.PRICE_PRECISION,
             expectedUnderlyingAmount: (2000 * (10**underlyingToken.decimals()) * 1) / 5
         });
     }
 
     function testClaimAllExercised() public {
-        uint256 _optionAmount1 = 2000 * (10**optionToken.decimals());
+        uint256 optionAmount1 = 2000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER1);
-        optionToken.write(_optionAmount1);
-        assertEq(optionToken.balanceOf(Constants.WRITER1), _optionAmount1, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount1);
+        assertEq(optionToken.balanceOf(Constants.WRITER1), optionAmount1, "BEFORE_OPTION_BALANCE");
 
-        uint256 _optionAmount2 = 3000 * (10**optionToken.decimals());
+        uint256 optionAmount2 = 3000 * (10**optionToken.decimals());
         vm.prank(Constants.WRITER2);
-        optionToken.write(_optionAmount2);
-        assertEq(optionToken.balanceOf(Constants.WRITER2), _optionAmount2, "BEFORE_OPTION_BALANCE");
+        optionToken.write(optionAmount2);
+        assertEq(optionToken.balanceOf(Constants.WRITER2), optionAmount2, "BEFORE_OPTION_BALANCE");
 
         // transfer option token to exerciser
         vm.prank(Constants.WRITER1);
-        optionToken.transfer(Constants.EXERCISER, _optionAmount1);
+        optionToken.transfer(Constants.EXERCISER, optionAmount1);
 
         // all exercised
         vm.prank(Constants.EXERCISER);
-        optionToken.exercise(_optionAmount1);
+        optionToken.exercise(optionAmount1);
 
         vm.warp(1 days + 1);
         _claim({
             user: Constants.WRITER1,
-            optionAmount: _optionAmount1,
-            // 1000 * 1e6 * (3000 * 1e18 / (3000 * 1e18 + 2000 * 1e18))
-            expectedQuoteAmount: (1000 * (10**quoteToken.decimals()) * 3) / 5,
-            // (1000 * 1e6 / 0.5 * 1e-12) * (2000 * 1e18 / (3000 * 1e18 + 2000 * 1e18))
+            optionAmount: optionAmount1,
+            // STRIKE_PRICE * (optionAmount1 + optionAmount2 - optionAmount1) * (optionAmount1 / (optionAmount1 + optionAmount2))
+            expectedQuoteAmount: (STRIKE_PRICE * (5000 - 2000) * (10**quoteToken.decimals()) * 2) /
+                5 /
+                Constants.PRICE_PRECISION,
             expectedUnderlyingAmount: (2000 * (10**underlyingToken.decimals()) * 2) / 5
         });
     }

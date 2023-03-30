@@ -16,7 +16,6 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     uint256 private constant _FEE_PRECISION = 10**6;
-    uint256 private constant _PRICE_PRECISION = 10**18;
 
     uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;

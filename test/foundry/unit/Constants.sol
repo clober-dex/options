@@ -9,5 +9,6 @@ library Constants {
     address constant WRITER3 = address(3);
     address constant EXERCISER = address(4);
     uint256 constant FEE_PRECISION = 10**6;
+    uint256 constant PRICE_PRECISION = 10**18;
     uint256 constant EXPIRES_AT = 1 days;
 }

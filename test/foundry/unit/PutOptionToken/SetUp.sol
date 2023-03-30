@@ -11,6 +11,8 @@ import "../../../mocks/MockPutOptionToken.sol";
 import "../Constants.sol";
 
 contract PutOptionTokenUnitTestSetUp is Test {
+    uint256 constant INITIAL_AMOUNT = 10**10;
+
     function run(uint256 strikePrice, uint256 exerciseFee)
         external
         returns (
@@ -25,14 +27,14 @@ contract PutOptionTokenUnitTestSetUp is Test {
         underlyingToken = new MockUnderlyingToken();
 
         // mint some tokens to the writers
-        quoteToken.mint(initiator, 10000000 * (10**quoteToken.decimals()));
-        quoteToken.mint(Constants.WRITER1, 10000000 * (10**quoteToken.decimals()));
-        quoteToken.mint(Constants.WRITER2, 10000000 * (10**quoteToken.decimals()));
-        quoteToken.mint(Constants.WRITER3, 10000000 * (10**quoteToken.decimals()));
-        quoteToken.mint(Constants.EXERCISER, 10000000 * (10**quoteToken.decimals()));
+        quoteToken.mint(initiator, INITIAL_AMOUNT * (10**quoteToken.decimals()));
+        quoteToken.mint(Constants.WRITER1, INITIAL_AMOUNT * (10**quoteToken.decimals()));
+        quoteToken.mint(Constants.WRITER2, INITIAL_AMOUNT * (10**quoteToken.decimals()));
+        quoteToken.mint(Constants.WRITER3, INITIAL_AMOUNT * (10**quoteToken.decimals()));
+        quoteToken.mint(Constants.EXERCISER, INITIAL_AMOUNT * (10**quoteToken.decimals()));
 
-        underlyingToken.mint(initiator, 10000000 * (10**underlyingToken.decimals()));
-        underlyingToken.mint(Constants.EXERCISER, 10000000 * (10**underlyingToken.decimals()));
+        underlyingToken.mint(initiator, INITIAL_AMOUNT * (10**underlyingToken.decimals()));
+        underlyingToken.mint(Constants.EXERCISER, INITIAL_AMOUNT * (10**underlyingToken.decimals()));
 
         optionToken = new MockPutOptionToken(
             address(underlyingToken),

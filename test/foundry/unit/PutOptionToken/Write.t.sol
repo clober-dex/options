@@ -15,6 +15,9 @@ import "./SetUp.sol";
 contract PutOptionWriteUnitTest is Test {
     event Write(address indexed writer, uint256 amount);
 
+    uint256 constant STRIKE_PRICE = 23 * 10**12; // $0.000023
+    uint256 constant EXERCISE_FEE = 10000; // 1%
+
     PutOptionToken optionToken;
 
     MockQuoteToken quoteToken;
@@ -22,8 +25,8 @@ contract PutOptionWriteUnitTest is Test {
 
     function setUp() public {
         (quoteToken, underlyingToken, optionToken) = (new PutOptionTokenUnitTestSetUp()).run(
-            23 * 10**12, // $0.000023
-            10000 // 1%
+            STRIKE_PRICE,
+            EXERCISE_FEE
         );
     }
 
@@ -53,27 +56,31 @@ contract PutOptionWriteUnitTest is Test {
     function testWriteNormalCase() public {
         _write({
             user: Constants.WRITER1,
-            optionAmount: 2000 * (10**optionToken.decimals()),
-            expectedQuoteAmount: 1000 * (10**quoteToken.decimals())
+            optionAmount: 1000000 * (10**optionToken.decimals()),
+            expectedQuoteAmount: 23 * (10**quoteToken.decimals())
         });
     }
 
     function testWriteRoundDownCase() public {
-        _write({user: Constants.WRITER1, optionAmount: 3333333333333333333, expectedQuoteAmount: 1666667});
+        _write({
+            user: Constants.WRITER1,
+            optionAmount: (1000000 * (10**optionToken.decimals())) / 3,
+            expectedQuoteAmount: (23 * (10**quoteToken.decimals())) / 3 + 1
+        });
     }
 
     function testWriteUnderQuotePrecisionComplement() public {
         vm.expectRevert("INVALID_AMOUNT");
         optionToken.write(0);
 
-        uint256 _minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
-        optionToken.write(_minimumAmountToNotRevert);
+        uint256 minimumAmountToNotRevert = 2 * 10**(18 - quoteToken.decimals());
+        optionToken.write(minimumAmountToNotRevert);
     }
 
     function testWriteWhenOptionExpired() public {
         vm.warp(1 days + 1);
-        uint256 _amount = 1000 * (10**optionToken.decimals());
+        uint256 amount = 1000 * (10**optionToken.decimals());
         vm.expectRevert("OPTION_EXPIRED");
-        optionToken.write(_amount);
+        optionToken.write(amount);
     }
 }
