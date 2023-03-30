@@ -69,7 +69,7 @@ contract CallOptionExerciseUnitTest is Test {
             expectedUnderlyingAmount: 142 *
                 (10**underlyingToken.decimals()) -
                 (142 * (10**underlyingToken.decimals()) * EXERCISE_FEE) /
-                1000000
+                Constants.FEE_PRECISION
         });
         _exercise({
             user: Constants.EXERCISER,
@@ -79,7 +79,7 @@ contract CallOptionExerciseUnitTest is Test {
             expectedUnderlyingAmount: 7856 *
                 (10**(underlyingToken.decimals() - 10)) -
                 (7856 * (10**(underlyingToken.decimals() - 10)) * EXERCISE_FEE) /
-                1000000
+                Constants.FEE_PRECISION
         });
     }
 
@@ -98,7 +98,7 @@ contract CallOptionExerciseUnitTest is Test {
             expectedUnderlyingAmount: optionAmount /
                 10**(optionToken.decimals() - underlyingToken.decimals()) -
                 ((optionAmount / 10**(optionToken.decimals() - underlyingToken.decimals())) * EXERCISE_FEE) /
-                1000000
+                Constants.FEE_PRECISION
         });
     }
 
@@ -121,7 +121,7 @@ contract CallOptionExerciseUnitTest is Test {
             expectedUnderlyingAmount: optionAmount1 /
                 10**(optionToken.decimals() - underlyingToken.decimals()) -
                 ((optionAmount1 / 10**(optionToken.decimals() - underlyingToken.decimals())) * EXERCISE_FEE) /
-                1000000
+                Constants.FEE_PRECISION
         });
 
         // transfer option token to exerciser
@@ -136,7 +136,7 @@ contract CallOptionExerciseUnitTest is Test {
             expectedUnderlyingAmount: optionAmount2 /
                 10**(optionToken.decimals() - underlyingToken.decimals()) -
                 ((optionAmount2 / 10**(optionToken.decimals() - underlyingToken.decimals())) * EXERCISE_FEE) /
-                1000000
+                Constants.FEE_PRECISION
         });
     }
 
