@@ -18,7 +18,6 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
     uint256 private constant _FEE_PRECISION = 10**6;
     uint256 private constant _PRICE_PRECISION = 10**18;
 
-    uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
     uint256 private immutable _quotePrecisionComplement; // 10**(18 - d)
@@ -50,15 +49,9 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         _quotePrecisionComplement = 10**(18 - IERC20Metadata(quoteToken_).decimals());
         _underlyingPrecisionComplement = 10**(18 - IERC20Metadata(underlyingToken_).decimals());
 
-        _decimals = IERC20Metadata(underlyingToken_).decimals();
-
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
         exerciseFee = exerciseFee_;
-    }
-
-    function decimals() public view override returns (uint8) {
-        return _decimals;
     }
 
     function underlyingToken() external view returns (address) {
