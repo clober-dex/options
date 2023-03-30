@@ -152,8 +152,8 @@ contract CallOptionExerciseUnitTest is Test {
 
     function testExerciseOptionExpired() public {
         vm.warp(1 days + 1);
-        uint256 _amount = 1000 * (10**optionToken.decimals());
+        uint256 amount = 1000 * (10**optionToken.decimals());
         vm.expectRevert("OPTION_EXPIRED");
-        optionToken.exercise(_amount);
+        optionToken.exercise(amount);
     }
 }
