@@ -32,7 +32,6 @@ contract PutOptionClaimUnitTest is Test {
 
     function _claim(
         address user,
-        uint256 optionAmount,
         uint256 expectedQuoteAmount,
         uint256 expectedUnderlyingAmount
     ) private {
@@ -40,7 +39,11 @@ contract PutOptionClaimUnitTest is Test {
         uint256 beforeUnderlyingBalance = underlyingToken.balanceOf(user);
 
         vm.expectEmit(true, false, false, true);
-        emit Claim(user, optionAmount);
+        emit Claim(
+            user,
+            (optionToken.collateral(user) * (10**(18 + underlyingToken.decimals() - quoteToken.decimals()))) /
+                STRIKE_PRICE
+        );
         vm.prank(user);
         optionToken.claim();
 
@@ -67,7 +70,6 @@ contract PutOptionClaimUnitTest is Test {
         vm.warp(1 days + 1);
         _claim({
             user: Constants.WRITER1,
-            optionAmount: optionAmount1,
             expectedQuoteAmount: (STRIKE_PRICE * 2000 * (10**quoteToken.decimals())) / Constants.PRICE_PRECISION,
             // No one exercised, so underlying amount is 0
             expectedUnderlyingAmount: 0
@@ -75,7 +77,6 @@ contract PutOptionClaimUnitTest is Test {
 
         _claim({
             user: Constants.WRITER2,
-            optionAmount: optionAmount2,
             expectedQuoteAmount: (STRIKE_PRICE * 3000 * (10**quoteToken.decimals())) / Constants.PRICE_PRECISION,
             // No one exercised, so underlying amount is 0
             expectedUnderlyingAmount: 0
@@ -104,7 +105,6 @@ contract PutOptionClaimUnitTest is Test {
         vm.warp(1 days + 1);
         _claim({
             user: Constants.WRITER1,
-            optionAmount: optionAmount1,
             // STRIKE_PRICE * (optionAmount1 + optionAmount2 - optionAmount1 / 2) * (optionAmount1 / (optionAmount1 + optionAmount2))
             expectedQuoteAmount: (((STRIKE_PRICE * (5000 - 1000) * 2) / 5) * (10**quoteToken.decimals())) /
                 Constants.PRICE_PRECISION,
@@ -134,7 +134,6 @@ contract PutOptionClaimUnitTest is Test {
         vm.warp(1 days + 1);
         _claim({
             user: Constants.WRITER1,
-            optionAmount: optionAmount1,
             // STRIKE_PRICE * (optionAmount1 + optionAmount2 - optionAmount1) * (optionAmount1 / (optionAmount1 + optionAmount2))
             expectedQuoteAmount: (STRIKE_PRICE * (5000 - 2000) * (10**quoteToken.decimals()) * 2) /
                 5 /
