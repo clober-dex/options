@@ -85,8 +85,8 @@ contract CallOptionWriteUnitTest is Test {
 
     function testWriteWhenOptionExpired() public {
         vm.warp(1 days + 1);
-        uint256 _amount = 1000 * (10**optionToken.decimals());
+        uint256 amount = 1000 * (10**optionToken.decimals());
         vm.expectRevert("OPTION_EXPIRED");
-        optionToken.write(_amount);
+        optionToken.write(amount);
     }
 }
