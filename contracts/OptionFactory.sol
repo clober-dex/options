@@ -42,7 +42,7 @@ contract OptionFactory is CloberOptionFactory, Ownable {
             string memory strikePriceString = StringUtils.uint256ToString(optionParams[i].strikePrice, _PRECISION);
             (uint256 year, uint256 month, uint256 day) = DateTime.timestampToDate(optionParams[i].expiresAt);
             string memory name = string(
-                // Ethereum Call Option Expires 230324-1800-C
+                // Ethereum Put Options at 123 fUSD (exp.20230324)
                 abi.encodePacked(
                     IERC20(_underlyingToken).safeName(),
                     optionParams[i].call ? " Call Options at " : " Put Options at ",
@@ -55,7 +55,7 @@ contract OptionFactory is CloberOptionFactory, Ownable {
                 )
             );
             string memory symbol = string(
-                // ETH-230324-1800-C
+                // ETH-20230324-9.90-C
                 abi.encodePacked(
                     IERC20(_underlyingToken).safeSymbol(),
                     "-",
