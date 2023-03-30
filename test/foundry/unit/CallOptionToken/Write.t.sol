@@ -41,15 +41,15 @@ contract CallOptionWriteUnitTest is Test {
         vm.prank(user);
         optionToken.write(optionAmount);
 
-        assertEq(optionToken.balanceOf(user), beforeOptionBalance + optionAmount, "WRITE_OPTION_BALANCE");
+        assertEq(optionToken.balanceOf(user) - beforeOptionBalance, optionAmount, "WRITE_OPTION_BALANCE");
         assertEq(
-            underlyingToken.balanceOf(user),
-            beforeUnderlyingBalance - expectedUnderlyingAmount,
+            beforeUnderlyingBalance - underlyingToken.balanceOf(user),
+            expectedUnderlyingAmount,
             "WRITE_QUOTE_BALANCE"
         );
         assertEq(
-            optionToken.collateral(user),
-            beforeCollateralBalance + expectedUnderlyingAmount,
+            optionToken.collateral(user) - beforeCollateralBalance,
+            expectedUnderlyingAmount,
             "WRITE_COLLATERAL_BALANCE"
         );
     }
@@ -72,7 +72,7 @@ contract CallOptionWriteUnitTest is Test {
         _write({
             user: Constants.WRITER1,
             optionAmount: 12345678901234567890,
-            expectedUnderlyingAmount: 1234567890123457
+            expectedUnderlyingAmount: 12345678901234567890
         });
     }
 

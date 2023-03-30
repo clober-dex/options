@@ -84,7 +84,7 @@ contract CallOptionExerciseUnitTest is Test {
     }
 
     function testSelfExerciseRoundDownCase() public {
-        uint256 optionAmount = 7333333333333333333; // 7.333333333333333333
+        uint256 optionAmount = 7333333333333333; // 733.3333333333333
         vm.prank(Constants.EXERCISER);
         optionToken.write(optionAmount);
         assertEq(optionToken.balanceOf(Constants.EXERCISER), optionAmount, "BEFORE_OPTION_BALANCE");
@@ -93,12 +93,9 @@ contract CallOptionExerciseUnitTest is Test {
             user: Constants.EXERCISER,
             optionAmount: optionAmount,
             // our contract lose quote token (1 WEI)
-            expectedQuoteAmount: 170133333334, // 170133.333334 = 23200 * 7333333333333333333 / 10^18 * 10^6
+            expectedQuoteAmount: 1701333333334, // 1701.333334 = 23200 * 7333333333333333 / 10^14 * 10^6
             // underlying and option decimals are same
-            expectedUnderlyingAmount: optionAmount /
-                10**(optionToken.decimals() - underlyingToken.decimals()) -
-                ((optionAmount / 10**(optionToken.decimals() - underlyingToken.decimals())) * EXERCISE_FEE) /
-                Constants.FEE_PRECISION
+            expectedUnderlyingAmount: optionAmount - (optionAmount * EXERCISE_FEE) / Constants.FEE_PRECISION - 1
         });
     }
 

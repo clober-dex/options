@@ -84,13 +84,13 @@ contract CallOptionCancelUnitTest is Test {
         _cancel({
             user: Constants.WRITER1,
             optionAmount: 11033333333333333332,
-            expectedUnderlyingAmount: 1103333333333333 // 11.03333333333333
+            expectedUnderlyingAmount: 11033333333333333332
         });
 
         _cancel({
             user: Constants.WRITER1,
             optionAmount: 300000000000000001,
-            expectedUnderlyingAmount: 30000000000000 // 0.3
+            expectedUnderlyingAmount: 300000000000000001
         });
         assertEq(optionToken.balanceOf(Constants.WRITER1), 0, "BEFORE_AFTER_BALANCE");
     }
