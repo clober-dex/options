@@ -126,16 +126,17 @@ contract PutOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
 
         uint256 collateralAmount = collateral[writer];
-        uint256 optionAmount = (collateralAmount * _precisionComplement) / strikePrice;
 
         uint256 claimableQuoteAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
-        uint256 claimableUnderlyingAmount = (optionAmount * exercisedAmount) / totalWrittenAmount;
+        uint256 claimableUnderlyingAmount = (collateralAmount * _precisionComplement * exercisedAmount) /
+            strikePrice /
+            totalWrittenAmount;
 
         collateral[writer] = 0;
         _quoteToken.transfer(writer, claimableQuoteAmount);
         _underlyingToken.transfer(writer, claimableUnderlyingAmount);
 
-        emit Claim(writer, optionAmount);
+        emit Claim(writer, (collateralAmount * _precisionComplement) / strikePrice);
     }
 
     function collectFee() external onlyOwner nonReentrant {
