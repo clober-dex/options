@@ -38,7 +38,7 @@ contract OptionFactory is CloberOptionFactory, Ownable {
     {
         uint256 length = optionParams.length;
         optionAddresses = new address[](length);
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < length; ++i) {
             string memory strikePriceString = StringUtils.uint256ToString(optionParams[i].strikePrice, _PRECISION);
             (uint256 year, uint256 month, uint256 day) = DateTime.timestampToDate(optionParams[i].expiresAt);
             string memory name = string(
