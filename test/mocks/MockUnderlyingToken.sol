@@ -5,4 +5,4 @@ pragma solidity ^0.8.0;
 
 import "./MockERC20.sol";
 
-contract MockUnderlyingToken is MockERC20("Fake ARB", "fARB", 18) {}
+contract MockUnderlyingToken is MockERC20("Fake ARB", "fARB", 14) {}
