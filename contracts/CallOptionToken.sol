@@ -45,10 +45,8 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
     ) ERC20(name_, symbol_) {
         _underlyingToken = IERC20(underlyingToken_);
         _quoteToken = IERC20(quoteToken_);
-        _precisionComplement =
-            10**(18 - IERC20Metadata(quoteToken_).decimals() + IERC20Metadata(underlyingToken_).decimals());
-
         _decimals = IERC20Metadata(underlyingToken_).decimals();
+        _precisionComplement = 10**(18 + _decimals - IERC20Metadata(quoteToken_).decimals());
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
