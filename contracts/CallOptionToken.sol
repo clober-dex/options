@@ -16,13 +16,11 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     uint256 private constant _FEE_PRECISION = 10**6;
-    uint256 private constant _PRICE_PRECISION = 10**18;
 
     uint8 private immutable _decimals;
     IERC20 private immutable _quoteToken;
     IERC20 private immutable _underlyingToken;
-    uint256 private immutable _quotePrecisionComplement; // 10**(18 - d)
-    uint256 private immutable _underlyingPrecisionComplement; // 10**(18 - d)
+    uint256 private immutable _precisionComplement; // 10**(18 + underlying - quote)
 
     // Write => timestamp <= expiresAt
     // Cancel => timestamp <= expiresAt
@@ -47,10 +45,8 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
     ) ERC20(name_, symbol_) {
         _underlyingToken = IERC20(underlyingToken_);
         _quoteToken = IERC20(quoteToken_);
-        _quotePrecisionComplement = 10**(18 - IERC20Metadata(quoteToken_).decimals());
-        _underlyingPrecisionComplement = 10**(18 - IERC20Metadata(underlyingToken_).decimals());
-
         _decimals = IERC20Metadata(underlyingToken_).decimals();
+        _precisionComplement = 10**(18 + _decimals - IERC20Metadata(quoteToken_).decimals());
 
         strikePrice = strikePrice_;
         expiresAt = expiresAt_;
@@ -73,7 +69,7 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
         require(optionAmount > 0, "INVALID_AMOUNT");
 
-        uint256 collateralAmount = Math.ceilDiv(optionAmount, _underlyingPrecisionComplement);
+        uint256 collateralAmount = optionAmount;
 
         _underlyingToken.safeTransferFrom(msg.sender, address(this), collateralAmount);
         collateral[msg.sender] += collateralAmount;
@@ -87,7 +83,7 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
         require(optionAmount > 0, "INVALID_AMOUNT");
 
-        uint256 collateralAmount = optionAmount / _underlyingPrecisionComplement;
+        uint256 collateralAmount = optionAmount;
 
         collateral[msg.sender] -= collateralAmount;
         _burn(msg.sender, optionAmount);
@@ -101,12 +97,12 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         require(block.timestamp <= expiresAt, "OPTION_EXPIRED");
         require(optionAmount > 0, "INVALID_AMOUNT");
 
-        uint256 collateralAmount = Math.ceilDiv(optionAmount, _underlyingPrecisionComplement);
+        uint256 collateralAmount = optionAmount;
 
         _quoteToken.safeTransferFrom(
             msg.sender,
             address(this),
-            Math.ceilDiv(optionAmount * strikePrice, _quotePrecisionComplement * _PRICE_PRECISION)
+            Math.ceilDiv(optionAmount * strikePrice, _precisionComplement)
         );
 
         _burn(msg.sender, optionAmount);
@@ -127,16 +123,17 @@ contract CallOptionToken is ERC20, CloberOptionToken, ReentrancyGuard, Ownable {
         uint256 totalWrittenAmount = expiredAmount + exercisedAmount;
 
         uint256 collateralAmount = collateral[writer];
-        uint256 amount = (collateralAmount * strikePrice) / _quotePrecisionComplement / _PRICE_PRECISION;
 
-        uint256 claimableQuoteAmount = (amount * exercisedAmount) / totalWrittenAmount;
+        uint256 claimableQuoteAmount = (collateralAmount * strikePrice * exercisedAmount) /
+            _precisionComplement /
+            totalWrittenAmount;
         uint256 claimableUnderlyingAmount = (collateralAmount * expiredAmount) / totalWrittenAmount;
 
         collateral[writer] = 0;
         _quoteToken.transfer(writer, claimableQuoteAmount);
         _underlyingToken.transfer(writer, claimableUnderlyingAmount);
 
-        emit Claim(writer, amount);
+        emit Claim(writer, collateralAmount);
     }
 
     function claim() external {
