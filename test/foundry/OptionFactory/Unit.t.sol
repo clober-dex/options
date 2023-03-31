@@ -13,46 +13,93 @@ import "../../../contracts/interfaces/CloberOptionFactory.sol";
 contract OptionFactoryUnitTest is Test {
     uint256 private constant _FEE = 1000; // 0.1%
 
-    MockQuoteToken public quoteToken;
-    MockUnderlyingToken public underlyingToken;
-    OptionFactory public optionFactory;
+    MockUnderlyingToken private _underlyingToken;
+    MockQuoteToken private _quoteToken;
+    OptionFactory private _optionFactory;
 
     function setUp() public {
-        underlyingToken = new MockUnderlyingToken();
-        quoteToken = new MockQuoteToken();
+        _underlyingToken = new MockUnderlyingToken();
+        _quoteToken = new MockQuoteToken();
 
-        optionFactory = new OptionFactory(address(underlyingToken), address(quoteToken), _FEE);
+        _optionFactory = new OptionFactory(address(_underlyingToken), address(_quoteToken), _FEE);
     }
 
-    function testCallOptionName() public {
-        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
+    function _checkOptionInfos(
+        CloberOptionToken optionToken,
+        string memory name,
+        string memory symbol,
+        address underlyingToken,
+        address quoteToken,
+        uint256 expiresAt,
+        uint256 exerciseFee,
+        uint256 strikePrice
+    ) internal {
+        assertEq(IERC20Metadata(address(optionToken)).name(), name, "INVALID_NAME");
+        assertEq(IERC20Metadata(address(optionToken)).symbol(), symbol, "INVALID_SYMBOL");
+        assertEq(optionToken.quoteToken(), quoteToken, "INVALID_QUOTE_TOKEN");
+        assertEq(optionToken.underlyingToken(), underlyingToken, "INVALID_UNDERLYING_TOKEN");
+        assertEq(optionToken.expiresAt(), expiresAt, "INVALID_EXPIRE_TIMESTAMP");
+        assertEq(optionToken.exerciseFee(), exerciseFee, "INVALID_EXERCISE_FEE");
+        assertEq(optionToken.strikePrice(), strikePrice, "INVALID_STRIKE_PRICE");
+    }
+
+    function testCallOptionInfo() public {
+        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](2);
         optionParams[0] = CloberOptionFactory.OptionParams(true, 1679637415, 99 * 10**17);
-        address[] memory aa = optionFactory.deployOptions(optionParams);
+        optionParams[1] = CloberOptionFactory.OptionParams(true, 1679938736, 1345 * 10**18);
 
-        assertEq(ERC20(aa[0]).name(), "Fake ARB Call Options at 9.90 fUSD (exp.20230324)", "WRONG_NAME");
+        address[] memory optionAddresses = _optionFactory.deployOptions(optionParams);
+
+        _checkOptionInfos(
+            CloberOptionToken(optionAddresses[0]),
+            "Fake ARB Call Options at 9.90 fUSD (exp.20230324)",
+            "fARB-20230324-9.90-C",
+            address(_underlyingToken),
+            address(_quoteToken),
+            1679637415,
+            1000,
+            99 * 10**17
+        );
+
+        _checkOptionInfos(
+            CloberOptionToken(optionAddresses[1]),
+            "Fake ARB Call Options at 1345 fUSD (exp.20230327)",
+            "fARB-20230327-1345-C",
+            address(_underlyingToken),
+            address(_quoteToken),
+            1679938736,
+            1000,
+            1345 * 10**18
+        );
     }
 
-    function testPutOptionName() public {
-        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
-        optionParams[0] = CloberOptionFactory.OptionParams(false, 1679637415, 1234 * 10**17);
-        address[] memory aa = optionFactory.deployOptions(optionParams);
+    function testPutOptionInfo() public {
+        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](2);
+        optionParams[0] = CloberOptionFactory.OptionParams(false, 1679637415, 99 * 10**17);
+        optionParams[1] = CloberOptionFactory.OptionParams(false, 1679938736, 1345 * 10**18);
 
-        assertEq(ERC20(aa[0]).name(), "Fake ARB Put Options at 123 fUSD (exp.20230324)", "WRONG_NAME");
-    }
+        address[] memory optionAddresses = _optionFactory.deployOptions(optionParams);
 
-    function testCallOptionSymbol() public {
-        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
-        optionParams[0] = CloberOptionFactory.OptionParams(true, 1679637415, 99 * 10**17);
-        address[] memory aa = optionFactory.deployOptions(optionParams);
+        _checkOptionInfos(
+            CloberOptionToken(optionAddresses[0]),
+            "Fake ARB Put Options at 9.90 fUSD (exp.20230324)",
+            "fARB-20230324-9.90-P",
+            address(_underlyingToken),
+            address(_quoteToken),
+            1679637415,
+            1000,
+            99 * 10**17
+        );
 
-        assertEq(ERC20(aa[0]).symbol(), "fARB-20230324-9.90-C", "WRONG_SYMBOL");
-    }
-
-    function testPutOptionSymbol() public {
-        CloberOptionFactory.OptionParams[] memory optionParams = new CloberOptionFactory.OptionParams[](1);
-        optionParams[0] = CloberOptionFactory.OptionParams(false, 1679637415, 1234 * 10**17);
-        address[] memory aa = optionFactory.deployOptions(optionParams);
-
-        assertEq(ERC20(aa[0]).symbol(), "fARB-20230324-123-P", "WRONG_SYMBOL");
+        _checkOptionInfos(
+            CloberOptionToken(optionAddresses[1]),
+            "Fake ARB Put Options at 1345 fUSD (exp.20230327)",
+            "fARB-20230327-1345-P",
+            address(_underlyingToken),
+            address(_quoteToken),
+            1679938736,
+            1000,
+            1345 * 10**18
+        );
     }
 }
