@@ -1,6 +1,7 @@
 ignore:
   - "contracts/arbitrum"
   - "contracts/interfaces"
+  - "contracts/library"
   - "test"
 
 coverage:
